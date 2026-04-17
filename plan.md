@@ -11,16 +11,18 @@ Iterations 0–8, 10, and 11 complete, Iteration 9 cancelled, plus an out-of-ite
 - **Timeline view**: 24-hour grid per zone (12 on mobile) with hourly rulers, current-time highlighting, business-hour background colors, and all-zone overlap visualization.
 - **Overlap calculation**: Computes shared windows across ALL selected zones using DST-safe UTC interval math.
 - **Overlap legend**: Visual indicator and explanatory text when shared overlap windows exist.
+- **Overlap explanation cleanup**: Shared overlap meaning is presented in the timeline legend only; the redundant standalone overlap panel was removed.
 - **Pairwise overlap matrix**: Table below the timeline stack; shows total overlap minutes for every zone pair with intensity-scaled cell backgrounds; horizontally scrollable.
 - **Persistence and share URLs**: Restore scenarios from local storage, hydrate from URL state when present, and copy a shareable URL from the sidebar.
 - **Accessibility and responsive pass**: Keyboard-selectable timezone search, visible focus treatment, explicit timeline legend and status text, and horizontal scrolling for dense timeline tracks on narrow screens.
+- **Playwright E2E enablement**: Chromium smoke tests cover app load, keyboard timezone add flow, and overlap legend behavior against a real Vite server.
 - Business-hours configuration (start/end times, support for overnight spans) with live timeline updates.
 - Drag-and-drop zone reordering plus keyboard controls (arrow keys).
 - Target zone marking with visual distinction and timeline anchoring.
 - DST-safe timezone conversion utilities with UTC interval calculations.
-- Comprehensive test coverage (63 tests: 35 timezone + 16 store + 12 app).
+- Comprehensive test coverage (63 in-repo tests: 35 timezone + 16 store + 12 app) plus 3 Playwright E2E smoke tests.
 - Responsive layout: desktop (2-column sidebar + timeline), mobile (single column, 12-hour timeline).
-- All validation passing: tests, lint, build, format.
+- All validation passing: tests, Playwright E2E, lint, build, format.
 
 Next: Iteration 12 (polish and release candidate).
 
@@ -70,6 +72,7 @@ Next: Iteration 12 (polish and release candidate).
 - Timeline rendering: slot-based with a shared UTC reference window. Each card derives local hours from the zone's real UTC offset. The target zone's business-hours midpoint is computed in UTC and used as the center column, so all zone tracks are horizontally aligned to real time differences.
 - Persistence: both local storage and shareable URL state.
 - Deployment workflow: publish the `deploy` branch from a separate checkout or git worktree, not from the main development checkout.
+- UI validation workflow: keep a small Playwright smoke suite for load, keyboard interaction, and overlap-meaning regressions.
 - Core outputs for v1: business-hours visualization, computed shared overlap windows, pairwise overlap matrix, and coverage or handoff-gap analysis.
 - Preferred technical direction: exact interval-based calculations for overlap logic plus slot-based rendering for the visualization layer.
 

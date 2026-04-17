@@ -280,7 +280,17 @@ Status
 - Complete.
 - Search supports keyboard selection with active-option highlighting and `Enter` to add.
 - Timeline cards now include explicit legend and status text so target and overlap states do not rely on color alone.
+- Shared overlap meaning now appears only in the main timeline legend; the redundant standalone overlap panel was removed.
 - Narrow screens keep the timeline and matrix usable with horizontal scrolling instead of truncating dense data.
+
+## Out-of-Iteration: Playwright E2E Enablement
+
+Status
+
+- Complete.
+- Added Playwright config and Chromium smoke tests.
+- Added scripts for headless, headed, and UI-mode E2E runs.
+- Current smoke coverage: app load, keyboard timezone add flow, and overlap legend behavior.
 
 ## Iteration 12: Polish and Release Candidate
 
