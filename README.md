@@ -68,6 +68,12 @@ npm run format:check
 
 Then run `npm run dev` and exercise the reorder, target toggle, reset, reload, and share-link restore flows in the UI.
 
+## Deployment Note
+
+- Publish GitHub Pages from a separate checkout or git worktree dedicated to the `deploy` branch.
+- Do not reuse the main development checkout for deploy-branch cleanup or publishing.
+- Reason: deploy publishing may replace the full branch contents with built static artifacts, which can remove local untracked dependencies such as `node_modules` from the development checkout.
+
 ## Dependencies Added For The Project
 
 - `luxon` for DST-safe timezone calculations

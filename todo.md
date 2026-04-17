@@ -8,6 +8,7 @@ This backlog is organized into short iterations. Each iteration should end with 
 - Do not start the next iteration until the current checkpoint passes.
 - Prefer shipping a thin vertical slice over building multiple incomplete subsystems in parallel.
 - Keep a visible changelog in the app UI only when it helps testing; otherwise rely on git history.
+- When publishing GitHub Pages, use a separate checkout or git worktree for the `deploy` branch so deploy cleanup never touches the main development environment.
 
 ## Iteration 0: Project Setup
 

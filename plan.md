@@ -68,6 +68,7 @@ Next: Iteration 11 (responsive and accessible interaction pass), focused on keyb
 - Business hours: per-timezone configurable with region-aware defaults where feasible; v1 excludes holidays and one-off exceptions. Overnight windows (e.g. 22:00–06:00) are supported.
 - Timeline rendering: slot-based with a shared UTC reference window. Each card derives local hours from the zone's real UTC offset. The target zone's business-hours midpoint is computed in UTC and used as the center column, so all zone tracks are horizontally aligned to real time differences.
 - Persistence: both local storage and shareable URL state.
+- Deployment workflow: publish the `deploy` branch from a separate checkout or git worktree, not from the main development checkout.
 - Core outputs for v1: business-hours visualization, computed shared overlap windows, pairwise overlap matrix, and coverage or handoff-gap analysis.
 - Preferred technical direction: exact interval-based calculations for overlap logic plus slot-based rendering for the visualization layer.
 
