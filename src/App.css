@@ -440,6 +440,82 @@
   color: var(--muted-text-color);
 }
 
+/* ── Pairwise Overlap Matrix ─────────────────────── */
+
+.overlap-matrix-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--soft-border-color);
+}
+
+.overlap-matrix__heading {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.overlap-matrix__desc {
+  margin: 0 0 16px;
+  font-size: 0.83rem;
+  color: var(--muted-text-color);
+}
+
+.overlap-matrix-scroll {
+  overflow-x: auto;
+}
+
+.overlap-matrix {
+  border-collapse: collapse;
+  font-size: 0.83rem;
+  min-width: max-content;
+}
+
+.overlap-matrix__col-header,
+.overlap-matrix__row-header {
+  padding: 7px 12px;
+  font-weight: 600;
+  color: var(--muted-text-color);
+  white-space: nowrap;
+  text-align: left;
+}
+
+.overlap-matrix__col-header {
+  text-align: center;
+  border-bottom: 1px solid var(--soft-border-color);
+}
+
+.overlap-matrix__row-header {
+  border-right: 1px solid var(--soft-border-color);
+}
+
+.overlap-matrix__cell {
+  padding: 7px 12px;
+  text-align: center;
+  min-width: 72px;
+  border: 1px solid var(--soft-border-color);
+  border-radius: 0;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.15s;
+}
+
+.overlap-matrix__cell--self {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted-text-color);
+}
+
+.overlap-matrix__cell--no-overlap {
+  color: var(--muted-text-color);
+}
+
+.overlap-matrix__cell--has-overlap {
+  background: color-mix(
+    in srgb,
+    rgba(100, 200, 255, 0.55) calc(var(--overlap-intensity) * 100%),
+    transparent
+  );
+  color: var(--heading-color);
+  font-weight: 500;
+}
+
 @media (max-width: 1100px) {
   .workspace-grid {
     grid-template-columns: 1fr;

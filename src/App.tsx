@@ -22,6 +22,7 @@ import { ALL_TIMEZONES } from './data/timezones'
 import {
   parseTimeToMinutes,
   computeAllZoneOverlap,
+  computePairwiseOverlapDuration,
   type UtcInterval,
 } from './lib/timezone'
 
@@ -533,6 +534,105 @@ function App() {
               )
             })}
           </div>
+
+          {selectedZones.length >= 2 && (
+            <section
+              className="overlap-matrix-section"
+              aria-labelledby="matrix-heading"
+            >
+              <h3 id="matrix-heading" className="overlap-matrix__heading">
+                Pairwise overlap summary
+              </h3>
+              <p className="overlap-matrix__desc">
+                Total overlapping business-hour minutes for each zone pair
+                today.
+              </p>
+              <div className="overlap-matrix-scroll">
+                <table
+                  className="overlap-matrix"
+                  aria-label="Pairwise overlap matrix"
+                >
+                  <thead>
+                    <tr>
+                      <th scope="col" />
+                      {selectedZones.map((zone) => (
+                        <th
+                          key={zone.id}
+                          scope="col"
+                          className="overlap-matrix__col-header"
+                          title={zone.zone}
+                        >
+                          {zone.city}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedZones.map((rowZone) => (
+                      <tr key={rowZone.id}>
+                        <th
+                          scope="row"
+                          className="overlap-matrix__row-header"
+                          title={rowZone.zone}
+                        >
+                          {rowZone.city}
+                        </th>
+                        {selectedZones.map((colZone) => {
+                          if (rowZone.id === colZone.id) {
+                            return (
+                              <td
+                                key={colZone.id}
+                                className="overlap-matrix__cell overlap-matrix__cell--self"
+                                aria-label={`${rowZone.city} same zone`}
+                              >
+                                —
+                              </td>
+                            )
+                          }
+                          const minutes = computePairwiseOverlapDuration(
+                            rowZone.zone,
+                            rowZone.businessHours.start,
+                            rowZone.businessHours.end,
+                            colZone.zone,
+                            colZone.businessHours.start,
+                            colZone.businessHours.end,
+                          )
+                          const hours = Math.floor(minutes / 60)
+                          const mins = minutes % 60
+                          const label =
+                            minutes === 0
+                              ? 'none'
+                              : mins === 0
+                                ? `${hours}h`
+                                : `${hours}h ${mins}m`
+                          const intensity = Math.min(minutes / 480, 1)
+                          return (
+                            <td
+                              key={colZone.id}
+                              className={[
+                                'overlap-matrix__cell',
+                                minutes > 0
+                                  ? 'overlap-matrix__cell--has-overlap'
+                                  : 'overlap-matrix__cell--no-overlap',
+                              ].join(' ')}
+                              style={
+                                {
+                                  '--overlap-intensity': intensity,
+                                } as CSSProperties
+                              }
+                              aria-label={`${rowZone.city} and ${colZone.city}: ${label}`}
+                            >
+                              {label}
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
         </section>
       </main>
     </div>
