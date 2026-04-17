@@ -109,6 +109,17 @@ test.describe('time zone overlap workspace', () => {
     expect(box).not.toBeNull()
     expect(box!.x + box!.width).toBeLessThanOrEqual(390 + 1)
 
+    // Timeline rows should fit within the card on mobile instead of clipping.
+    const timelineScrollWidth = await page
+      .locator('.timeline-card__scroll')
+      .first()
+      .evaluate((element) => element.scrollWidth)
+    const timelineClientWidth = await page
+      .locator('.timeline-card__scroll')
+      .first()
+      .evaluate((element) => element.clientWidth)
+    expect(timelineScrollWidth).toBeLessThanOrEqual(timelineClientWidth + 1)
+
     await context.close()
   })
 })

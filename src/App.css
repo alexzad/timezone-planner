@@ -727,6 +727,29 @@
     justify-content: flex-start;
   }
 
+  .timeline-card {
+    padding: 14px;
+  }
+
+  .timeline-card__scroll {
+    overflow-x: visible;
+  }
+
+  .timeline-card__ruler,
+  .timeline-mini-track {
+    min-width: 0;
+    gap: 1px;
+    grid-template-columns: repeat(24, minmax(0, 1fr));
+  }
+
+  .timeline-card__ruler span {
+    font-size: 0.6rem;
+  }
+
+  .timeline-mini-track__cell {
+    height: 14px;
+  }
+
   .zone-card__main {
     flex-wrap: wrap;
   }
