@@ -124,6 +124,15 @@ Checkpoint
 - Utility tests pass for non-whole-hour offsets.
 - The app can compute local and UTC values for selected zones without UI errors.
 
+Status
+
+- Complete.
+- Created src/lib/timezone.ts with 18 utility functions for DST-safe conversions and overlap calculations.
+- Key utilities: parseTimeToMinutes, convertLocalToUtc, convertUtcToLocal, getBusinessHoursUtcInterval, computePairwiseOverlapDuration, computeAllZoneOverlap, computeCoverageGaps.
+- Created comprehensive test suite (35 tests) covering DST transitions (North America spring/fall, Europe spring/fall) and non-whole-hour offsets (Kolkata +5:30, Eucla +8:45, Nepal +5:45).
+- All tests passing (55 total: 35 timezone + 13 store + 7 app).
+- All validation passing: lint, build, format.
+
 ## Iteration 6: Basic Timeline View
 
 - Render a 24-hour timeline/grid for each selected timezone.
