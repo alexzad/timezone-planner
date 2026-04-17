@@ -74,4 +74,37 @@ test.describe('time zone overlap workspace', () => {
     await expect(darkTheme).toBeChecked()
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
   })
+
+  test('renders without horizontal overflow on mobile viewport', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      deviceScaleFactor: 2,
+      isMobile: true,
+    })
+    const page = await context.newPage()
+    await page.goto('/')
+
+    // The document should not overflow horizontally
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth)
+
+    // Key UI elements should be visible and fully within the viewport
+    await expect(
+      page.getByRole('heading', { name: /time zone overlap workspace/i }),
+    ).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: /timezone selection/i }),
+    ).toBeVisible()
+
+    // Theme toggle should be fully visible (not clipped off-screen)
+    const themeToggle = page.locator('.theme-toggle')
+    const box = await themeToggle.boundingBox()
+    expect(box).not.toBeNull()
+    expect(box!.x + box!.width).toBeLessThanOrEqual(390 + 1)
+
+    await context.close()
+  })
 })

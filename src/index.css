@@ -128,10 +128,11 @@ p {
 
 h1 {
   margin-bottom: 12px;
-  font-size: clamp(2.3rem, 4vw, 4.5rem);
+  font-size: clamp(1.6rem, 4vw, 4.5rem);
   line-height: 0.96;
   letter-spacing: -0.05em;
   color: var(--heading-color);
+  word-break: break-word;
 }
 
 h2 {
