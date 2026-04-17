@@ -1,0 +1,54 @@
+## Plan: Time Zone Overlap SPA
+
+Build a greenfield React + TypeScript SPA for comparing multiple IANA time zones, visualizing local business hours, and analyzing overlap for 24x7 operations planning. Use a timeline-first UI with complementary overlap summaries. For v1, keep business-hours rules to recurring weekly schedules only, persist state in both local storage and shareable URLs, and compute exact overlap windows with DST-safe timezone handling.
+
+**Steps**
+
+1. Phase 1: Foundation. Scaffold a React + TypeScript SPA with a lightweight build tool, define application state shape for ordered selected zones, target zones, per-zone business-hours rules, display settings, and persisted/shareable state, and choose a DST-safe timezone library plus a drag-and-drop library. This phase blocks all later work.
+2. Phase 2: Domain model and timezone engine. Implement the core domain model for selected zones, target flags, recurring weekly business-hours rules, overlap windows, pairwise overlap summaries, and handoff gaps. Normalize all calculations around UTC while storing business-hours definitions as local wall-clock times per zone. This depends on step 1.
+3. Phase 3: Timezone selection and ordering UI. Build the selector for full IANA timezone search/lookup, selected-zone list, remove actions, and ordering controls with both drag-and-drop and accessible keyboard reordering. This depends on step 1 and can run in parallel with step 4 once the shared state contract is defined.
+4. Phase 4: Business-hours configuration. Add per-timezone configurable business hours with country/region-aware defaults where feasible, falling back to a weekday 09:00-17:00 local schedule. Keep v1 limited to recurring weekly hours only, with no holiday or exception modeling. This depends on step 2 and can run in parallel with step 3.
+5. Phase 5: Core visualization. Implement the main 24-hour comparison surface, preferably with two synchronized views: a timeline/grid for each zone's local day and a derived overlap layer that highlights business-hour windows, all-zone shared windows, and target-relevant windows. This depends on steps 2, 3, and 4.
+6. Phase 6: Analytical outputs. Add computed shared overlap windows across all selected zones, a pairwise overlap summary matrix, and handoff-gap detection for 24x7 planning. Prioritize analysis around marked target zones by highlighting, filtering, and sorting relevant overlaps. This depends on step 5.
+7. Phase 7: Persistence and sharing. Persist the current scenario in local storage and mirror it into shareable URL state with versioning and migration guards. Include load/reset behavior and clearly define conflict precedence if both URL state and local state exist. This depends on steps 2 and 3 and should be finalized after step 5 so URL shape matches the real product state.
+8. Phase 8: Accessibility, responsiveness, and polish. Ensure keyboard support for selection and reordering, accessible timeline semantics, color-independent overlap cues, mobile-friendly layouts, and performance checks with larger timezone sets. This depends on steps 3 through 7.
+9. Phase 9: Verification. Validate DST transitions, non-integer offsets, target-zone filtering, state persistence, URL restoration, overlap correctness, and handoff-gap accuracy with both automated tests and manual scenario checks. This runs throughout, with final pass after step 8.
+
+**Relevant files**
+
+- /Users/alexzad/epm/time-zones/package.json - project dependencies and scripts for the SPA scaffold.
+- /Users/alexzad/epm/time-zones/src/app - app shell, routing or top-level composition, and persistence bootstrapping.
+- /Users/alexzad/epm/time-zones/src/features/timezones - timezone search, selected list, ordering, and target selection.
+- /Users/alexzad/epm/time-zones/src/features/business-hours - recurring weekly business-hours editor and defaults.
+- /Users/alexzad/epm/time-zones/src/features/visualization - timeline/grid rendering and overlap overlays.
+- /Users/alexzad/epm/time-zones/src/features/analysis - pairwise matrix, shared windows, and handoff-gap summaries.
+- /Users/alexzad/epm/time-zones/src/lib/timezone - DST-safe conversion, overlap computation, and formatting utilities.
+- /Users/alexzad/epm/time-zones/src/state - app state, selectors, URL serialization, and storage sync.
+- /Users/alexzad/epm/time-zones/src/test or /Users/alexzad/epm/time-zones/tests - unit tests for timezone logic and integration tests for the main flows.
+
+**Verification**
+
+1. Unit-test timezone conversion and overlap calculations across DST boundaries in North America, Europe, and zones without DST.
+2. Unit-test half-hour and quarter-hour offset zones such as Asia/Kolkata and Australia/Eucla to avoid assuming whole-hour offsets.
+3. Unit-test recurring weekly business-hours logic, including windows that cross midnight.
+4. Integration-test adding, removing, reordering, and marking target zones, including keyboard accessibility paths.
+5. Integration-test overlap summaries, pairwise matrix outputs, and handoff-gap detection against fixed known scenarios.
+6. Validate local storage persistence, URL round-tripping, and state restoration precedence rules.
+7. Manually verify responsive behavior for desktop and mobile widths and ensure the timeline remains readable with 6-10 zones selected.
+
+**Decisions**
+
+- Stack: React + TypeScript SPA.
+- Timezone selection: full IANA list with search/lookup.
+- Targets: target zones should highlight, prioritize overlap calculations, and support target-focused filtering.
+- Business hours: per-timezone configurable with region-aware defaults where feasible; v1 excludes holidays and one-off exceptions.
+- Persistence: both local storage and shareable URL state.
+- Core outputs for v1: business-hours visualization, computed shared overlap windows, pairwise overlap matrix, and coverage or handoff-gap analysis.
+- Preferred technical direction: exact interval-based calculations for overlap logic plus slot-based rendering for the visualization layer.
+
+**Further Considerations**
+
+1. Recommended additional feature: a reference-time scrubber that lets the user move through a 24-hour UTC window and see each zone update in sync. This improves operational planning and debugging of overlap logic.
+2. Recommended additional feature: saved named scenarios such as Follow-the-sun support, Americas plus EMEA, or custom team presets. This fits naturally with local persistence and URL sharing.
+3. Recommended alternative view: add a coverage heatmap as a secondary analysis tab if the main timeline becomes visually dense with many zones. It is especially useful for identifying 24x7 handoff gaps faster than a pure timeline.
+4. Explicitly exclude for v1 unless requirements change: public holiday calendars, staffing capacity modeling, real-time roster imports, and meeting-booking workflows.
