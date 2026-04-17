@@ -147,6 +147,17 @@ Checkpoint
 - Business hours are clearly visible for each row.
 - Reordering zones changes the timeline row order immediately.
 
+Status
+
+- Complete.
+- Timeline view already implemented via 24-column grid per zone with hourly rulers.
+- Current local time displayed via badges and outline on current-hour cells.
+- Business-hour highlighting applied with color-mixed background per zone's accent color.
+- Responsive design: full 24 hours on desktop, 12 hours on mobile; single-column layout on narrow screens.
+- Refactored App.tsx to import parseTimeToMinutes from timezone utilities (Iteration 5) for consistency.
+- Seeded with 3 zones (New York, London, Tokyo) displaying correctly on timeline.
+- All tests passing (55 total), lint clean, build successful (28 modules).
+
 ## Iteration 7: Shared Overlap Visualization
 
 - Compute exact shared overlap windows across all selected zones.

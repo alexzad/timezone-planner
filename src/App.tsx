@@ -19,14 +19,9 @@ import './App.css'
 import { useAppStore } from './state/appStore'
 import type { SelectedTimeZone } from './state/appStore'
 import { ALL_TIMEZONES } from './data/timezones'
+import { parseTimeToMinutes } from './lib/timezone'
 
 const HOURS_IN_DAY = 24
-
-const parseTimeToMinutes = (value: string): number => {
-  const [hours, minutes] = value.split(':').map(Number)
-
-  return hours * 60 + minutes
-}
 
 const isHourWithinBusinessWindow = (
   hour: number,
