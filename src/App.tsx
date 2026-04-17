@@ -1,20 +1,18 @@
+import type { CSSProperties } from 'react'
 import { DateTime } from 'luxon'
 import './App.css'
-
-const previewZones = [
-  { city: 'San Francisco', zone: 'America/Los_Angeles' },
-  { city: 'London', zone: 'Europe/London' },
-  { city: 'Singapore', zone: 'Asia/Singapore' },
-]
+import { useAppStore } from './state/appStore'
 
 const iterationChecklist = [
-  'Project shell is in place',
-  'Core dependencies are installed',
-  'Test runner and formatting commands are configured',
+  'Core app state is defined',
+  'Seeded timezone scenario is loaded',
+  'Timezone list is rendered from state',
 ]
 
 function App() {
   const updatedAt = DateTime.now().toFormat('ccc, dd LLL yyyy HH:mm')
+  const { selectedZones, toggleTarget, resetTargets } = useAppStore()
+  const targetCount = selectedZones.filter((entry) => entry.isTarget).length
 
   return (
     <div className="app-shell">
@@ -23,14 +21,20 @@ function App() {
           <p className="eyebrow">24x7 Operations Planner</p>
           <h1>Time zone overlap workspace</h1>
           <p className="hero-copy">
-            This first checkpoint establishes the project frame for timezone
-            selection, overlap visualization, and coverage analysis.
+            Iteration 1 replaces the static preview with real application state,
+            a seeded global scenario, and target-zone toggles you can test.
           </p>
         </div>
 
         <div className="hero-status" aria-label="Project readiness summary">
-          <span className="status-chip">Iteration 0</span>
-          <span className="status-text">App shell ready for feature work</span>
+          <span className="status-chip">Iteration 1</span>
+          <span className="status-text">
+            State-driven timezone preview ready
+          </span>
+          <span className="status-meta">
+            {selectedZones.length} zones loaded, {targetCount} target
+            {targetCount === 1 ? '' : 's'} selected
+          </span>
           <span className="status-meta">Updated {updatedAt}</span>
         </div>
       </header>
@@ -45,23 +49,49 @@ function App() {
             <h2 id="zones-heading">Timezone selection</h2>
           </div>
 
-          <div className="search-placeholder" aria-hidden="true">
-            Search IANA timezone list
+          <div className="search-placeholder">
+            Search and add come next. For now, this seeded scenario is driven by
+            the real app store.
           </div>
 
           <ul className="zone-list">
-            {previewZones.map((entry) => (
-              <li className="zone-card" key={entry.zone}>
-                <span>
-                  <strong>{entry.city}</strong>
-                  <small>{entry.zone}</small>
-                </span>
-                <button type="button" disabled>
-                  Target
-                </button>
-              </li>
-            ))}
+            {selectedZones.map((entry) => {
+              const localNow = DateTime.now().setZone(entry.zone)
+
+              return (
+                <li className="zone-card" key={entry.id}>
+                  <span>
+                    <strong>{entry.city}</strong>
+                    <small>{entry.zone}</small>
+                    <small>
+                      {localNow.toFormat('HH:mm')} local ·{' '}
+                      {localNow.offsetNameShort}
+                    </small>
+                  </span>
+
+                  <button
+                    type="button"
+                    className={
+                      entry.isTarget
+                        ? 'target-button is-active'
+                        : 'target-button'
+                    }
+                    onClick={() => toggleTarget(entry.id)}
+                  >
+                    {entry.isTarget ? 'Targeted' : 'Make target'}
+                  </button>
+                </li>
+              )
+            })}
           </ul>
+
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={resetTargets}
+          >
+            Reset targets
+          </button>
         </section>
 
         <section
@@ -70,7 +100,7 @@ function App() {
         >
           <div className="panel-header">
             <p className="panel-kicker">Main view</p>
-            <h2 id="timeline-heading">Timeline canvas</h2>
+            <h2 id="timeline-heading">Seeded timezone rows</h2>
           </div>
 
           <div className="timeline-ruler" aria-hidden="true">
@@ -79,10 +109,62 @@ function App() {
             ))}
           </div>
 
-          <div className="timeline-placeholder">
-            <p>
-              Timezone rows, business hours, and overlap bands will render here.
-            </p>
+          <div className="timeline-stack">
+            {selectedZones.map((entry) => {
+              const localNow = DateTime.now().setZone(entry.zone)
+
+              return (
+                <article
+                  className={
+                    entry.isTarget ? 'timeline-card is-target' : 'timeline-card'
+                  }
+                  key={entry.id}
+                  style={{ '--zone-accent': entry.color } as CSSProperties}
+                >
+                  <div className="timeline-card__header">
+                    <div>
+                      <h3>{entry.city}</h3>
+                      <p>{entry.zone}</p>
+                    </div>
+
+                    <div className="timeline-badges">
+                      <span className="time-badge">
+                        {localNow.toFormat('HH:mm')} local
+                      </span>
+                      <span className="time-badge">
+                        {entry.businessHours.start}-{entry.businessHours.end}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="timeline-mini-track" aria-hidden="true">
+                    {Array.from({ length: 24 }, (_, hour) => {
+                      const isBusinessHour = hour >= 9 && hour < 17
+                      const isCurrentHour = localNow.hour === hour
+
+                      return (
+                        <span
+                          key={`${entry.id}-${hour}`}
+                          className={[
+                            'timeline-mini-track__cell',
+                            isBusinessHour ? 'is-business-hour' : '',
+                            isCurrentHour ? 'is-current-hour' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                        />
+                      )
+                    })}
+                  </div>
+
+                  <p className="timeline-card__footnote">
+                    {entry.isTarget
+                      ? 'Included in target-focused planning.'
+                      : 'Available for comparison and future overlap analysis.'}
+                  </p>
+                </article>
+              )
+            })}
           </div>
         </section>
 
@@ -102,11 +184,29 @@ function App() {
           </ol>
 
           <div className="note-card">
-            <h3>Next implementation slice</h3>
+            <h3>What to test now</h3>
             <p>
-              Replace the preview cards with real application state and add the
-              timezone search flow.
+              Toggle target zones in the sidebar and verify that the target
+              count, button state, and highlighted rows update immediately.
             </p>
+          </div>
+
+          <div className="summary-card">
+            <h3>Seeded scenario</h3>
+            <dl className="summary-list">
+              <div>
+                <dt>Loaded zones</dt>
+                <dd>{selectedZones.length}</dd>
+              </div>
+              <div>
+                <dt>Current targets</dt>
+                <dd>{targetCount}</dd>
+              </div>
+              <div>
+                <dt>Weekday business hours</dt>
+                <dd>09:00-17:00</dd>
+              </div>
+            </dl>
           </div>
         </aside>
       </main>
