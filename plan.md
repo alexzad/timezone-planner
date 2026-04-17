@@ -4,21 +4,23 @@ Build a greenfield React + TypeScript SPA for comparing multiple IANA time zones
 
 **Current Status**
 
-Iterations 0–6 complete. App features:
+Iterations 0–7 complete. App features:
 
 - React + TypeScript SPA with Vite, Zustand state, @dnd-kit drag-and-drop, luxon for timezone math.
 - Seeded with 3 zones (New York, London, Tokyo); searchable 81-timezone IANA database.
-- **Timeline view**: 24-hour grid per zone (12 on mobile) with hourly rulers, current-time highlighting, business-hour background colors.
+- **Timeline view**: 24-hour grid per zone (12 on mobile) with hourly rulers, current-time highlighting, business-hour background colors, and **all-zone overlap visualization**.
+- **Overlap calculation**: Computes shared windows across ALL selected zones using DST-safe UTC interval math from Iteration 5.
+- **Overlap legend**: Visual indicator and explanatory text when shared overlap windows exist.
+- **Overlap cells**: Timeline cells in shared overlap windows highlighted with blue gradient and distinct visual styling.
 - Business-hours configuration (start/end times, support for overnight spans) with live timeline updates.
 - Drag-and-drop zone reordering plus keyboard controls (arrow keys).
 - Target zone marking with visual distinction and timeline anchoring.
-- DST-safe timezone conversion utilities with UTC interval calculations for business hours.
-- Overlap calculation engine (pairwise and all-zone overlaps, coverage gap detection).
-- Comprehensive test coverage (55 tests: 35 timezone + 13 store + 7 app); includes DST boundary and non-whole-hour offset tests.
+- DST-safe timezone conversion utilities with UTC interval calculations.
+- Comprehensive test coverage (56 tests: 35 timezone + 13 store + 8 app).
 - Responsive layout: desktop (2-column sidebar + timeline), mobile (single column, 12-hour timeline).
 - All validation passing: tests, lint, build, format.
 
-Next: Iteration 7 (shared overlap visualization with computed overlap windows).
+Next: Iteration 8 (pairwise overlap matrix for pair-by-pair coverage analysis).
 
 **Steps**
 

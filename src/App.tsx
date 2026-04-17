@@ -19,7 +19,11 @@ import './App.css'
 import { useAppStore } from './state/appStore'
 import type { SelectedTimeZone } from './state/appStore'
 import { ALL_TIMEZONES } from './data/timezones'
-import { parseTimeToMinutes } from './lib/timezone'
+import {
+  parseTimeToMinutes,
+  computeAllZoneOverlap,
+  type UtcInterval,
+} from './lib/timezone'
 
 const HOURS_IN_DAY = 24
 
@@ -47,6 +51,36 @@ const isHourWithinBusinessWindow = (
     slotStart === 0 ||
     slotEnd === HOURS_IN_DAY * 60
   )
+}
+
+/**
+ * Check if a local hour slot overlaps with any all-zone overlap intervals.
+ * Converts the local hour to UTC using the zone's offset, then checks against intervals.
+ */
+const isHourInAllZoneOverlap = (
+  hour: number,
+  tzName: string,
+  allZoneOverlaps: UtcInterval[],
+): boolean => {
+  if (allZoneOverlaps.length === 0) return false
+
+  // Get the current offset for the timezone (used to convert local to UTC)
+  const offset = DateTime.now().setZone(tzName).offset
+  const slotStartLocalMin = hour * 60
+  const slotEndLocalMin = slotStartLocalMin + 60
+  const slotStartUtcMin =
+    (slotStartLocalMin - offset + HOURS_IN_DAY * 60 * 2) % (HOURS_IN_DAY * 60)
+  const slotEndUtcMin =
+    (slotEndLocalMin - offset + HOURS_IN_DAY * 60 * 2) % (HOURS_IN_DAY * 60)
+
+  // Check if this UTC slot overlaps with any of the all-zone overlap intervals
+  for (const interval of allZoneOverlaps) {
+    if (slotStartUtcMin < interval.end && slotEndUtcMin > interval.start) {
+      return true
+    }
+  }
+
+  return false
 }
 
 /**
@@ -273,6 +307,15 @@ function App() {
       )
     : 12
 
+  // Compute all-zone overlap windows for visualization
+  const allZoneOverlapIntervals = computeAllZoneOverlap(
+    selectedZones.map((z) => ({
+      tz: z.zone,
+      start: z.businessHours.start,
+      end: z.businessHours.end,
+    })),
+  )
+
   return (
     <div className="app-shell">
       <header className="hero-panel">
@@ -382,6 +425,23 @@ function App() {
             <h2 id="timeline-heading">Timezone comparison</h2>
           </div>
 
+          {allZoneOverlapIntervals.length > 0 && (
+            <div
+              className="overlap-legend"
+              aria-labelledby="overlap-legend-title"
+            >
+              <p id="overlap-legend-title" className="overlap-legend__title">
+                Shared overlap window
+              </p>
+              <dl className="overlap-legend__items">
+                <dt className="overlap-legend__indicator overlap-legend__indicator--overlap" />
+                <dd className="overlap-legend__desc">
+                  All selected zones have business hours in this slot
+                </dd>
+              </dl>
+            </div>
+          )}
+
           <div className="timeline-stack">
             {selectedZones.map((entry) => {
               const localNow = DateTime.now().setZone(entry.zone)
@@ -404,6 +464,11 @@ function App() {
                     entry.businessHours.end,
                   ),
                   isCurrentHour: localNow.hour === localHour,
+                  isAllZoneOverlap: isHourInAllZoneOverlap(
+                    localHour,
+                    entry.zone,
+                    allZoneOverlapIntervals,
+                  ),
                 }
               })
 
@@ -451,6 +516,7 @@ function App() {
                           'timeline-mini-track__cell',
                           slot.isBusinessHour ? 'is-business-hour' : '',
                           slot.isCurrentHour ? 'is-current-hour' : '',
+                          slot.isAllZoneOverlap ? 'is-all-zone-overlap' : '',
                         ]
                           .filter(Boolean)
                           .join(' ')}

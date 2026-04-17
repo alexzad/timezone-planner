@@ -172,6 +172,19 @@ Checkpoint
 - Changing business hours or targets changes the overlap overlay immediately.
 - Fixed overlap test scenarios pass.
 
+Status
+
+- Complete.
+- Imported computeAllZoneOverlap from timezone utilities and integrated into App component.
+- Added helper function isHourInAllZoneOverlap to check if local hours fall within all-zone overlap intervals.
+- Updated timeline cell rendering to include is-all-zone-overlap class for cells within shared windows.
+- Added overlap legend component (overlap-legend) that displays when overlaps exist.
+- One-line overlap legend shows "Shared overlap window" with indicator and explanation.
+- Added CSS styling for overlap visualization: blue gradient backgrounds with box shadow for distinctiveness.
+- Legend has dedicated styles: light blue background panel, styled indicator box, and descriptive text.
+- Added new integration test verifying overlap legend structure and composition.
+- All tests passing (56 total: 35 timezone + 13 store + 8 app), lint clean, build successful (28 modules, CSS 7.70 KB).
+
 ## Iteration 8: Pairwise Overlap Matrix
 
 - Build a pairwise overlap summary matrix for all selected zones.

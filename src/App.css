@@ -384,6 +384,62 @@
   outline-offset: 1px;
 }
 
+.timeline-mini-track__cell.is-all-zone-overlap {
+  background: linear-gradient(
+    135deg,
+    rgba(100, 200, 255, 0.6),
+    rgba(120, 180, 255, 0.4)
+  );
+  box-shadow: 0 0 0 1px rgba(100, 200, 255, 0.8);
+}
+
+.overlap-legend {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(100, 200, 255, 0.08);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+}
+
+.overlap-legend__title {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-color);
+}
+
+.overlap-legend__items {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.overlap-legend__indicator {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.overlap-legend__indicator--overlap {
+  background: linear-gradient(
+    135deg,
+    rgba(100, 200, 255, 0.6),
+    rgba(120, 180, 255, 0.4)
+  );
+  box-shadow: 0 0 0 1px rgba(100, 200, 255, 0.8);
+}
+
+.overlap-legend__desc {
+  margin: 0;
+  color: var(--muted-text-color);
+}
+
 @media (max-width: 1100px) {
   .workspace-grid {
     grid-template-columns: 1fr;
