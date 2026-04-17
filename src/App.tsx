@@ -114,6 +114,21 @@ const computeUtcCenterHour = (
   return Math.round(utcMidMinutes / 60) % HOURS_IN_DAY
 }
 
+const formatDurationLabel = (minutes: number): string => {
+  if (minutes === 0) {
+    return 'none'
+  }
+
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+
+  if (remainingMinutes === 0) {
+    return `${hours}h`
+  }
+
+  return `${hours}h ${remainingMinutes}m`
+}
+
 type SortableZoneCardProps = {
   entry: SelectedTimeZone
   index: number
@@ -274,6 +289,7 @@ function App() {
 
   const [query, setQuery] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const referenceDate = DateTime.now()
 
   const sensors = useSensors(useSensor(PointerSensor))
 
@@ -304,7 +320,7 @@ function App() {
     ? computeUtcCenterHour(
         targetZone.businessHours.start,
         targetZone.businessHours.end,
-        DateTime.now().setZone(targetZone.zone).offset,
+        referenceDate.setZone(targetZone.zone).offset,
       )
     : 12
 
@@ -315,6 +331,7 @@ function App() {
       start: z.businessHours.start,
       end: z.businessHours.end,
     })),
+    referenceDate,
   )
 
   return (
@@ -445,7 +462,7 @@ function App() {
 
           <div className="timeline-stack">
             {selectedZones.map((entry) => {
-              const localNow = DateTime.now().setZone(entry.zone)
+              const localNow = referenceDate.setZone(entry.zone)
               // Round to the nearest hour so half-hour offset zones (e.g.
               // Asia/Kolkata) stay close to correct until the DST engine lands.
               const zoneOffsetHours = Math.round(localNow.offset / 60)
@@ -596,15 +613,9 @@ function App() {
                             colZone.zone,
                             colZone.businessHours.start,
                             colZone.businessHours.end,
+                            referenceDate,
                           )
-                          const hours = Math.floor(minutes / 60)
-                          const mins = minutes % 60
-                          const label =
-                            minutes === 0
-                              ? 'none'
-                              : mins === 0
-                                ? `${hours}h`
-                                : `${hours}h ${mins}m`
+                          const label = formatDurationLabel(minutes)
                           const intensity = Math.min(minutes / 480, 1)
                           return (
                             <td

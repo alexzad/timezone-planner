@@ -4,7 +4,7 @@ Build a greenfield React + TypeScript SPA for comparing multiple IANA time zones
 
 **Current Status**
 
-Iterations 0–8 complete, plus an out-of-iteration expansion of the timezone database. App features:
+Iterations 0–8 complete, Iteration 9 cancelled, plus an out-of-iteration expansion of the timezone database. App features:
 
 - React + TypeScript SPA with Vite, Zustand state, @dnd-kit drag-and-drop, luxon for timezone math.
 - Seeded with 3 zones (New York, London, Tokyo); searchable ~160-entry city database (new IANA zones + aliases).
@@ -20,7 +20,11 @@ Iterations 0–8 complete, plus an out-of-iteration expansion of the timezone da
 - Responsive layout: desktop (2-column sidebar + timeline), mobile (single column, 12-hour timeline).
 - All validation passing: tests, lint, build, format.
 
-Next: Iteration 9 (handoff gap analysis — detect uncovered UTC windows for 24x7 planning).
+Next: Iteration 10 (persistence and shareable URLs).
+
+**Cancelled Work**
+
+- Iteration 9: handoff gap analysis was implemented experimentally, then removed because the meaning was confusing in the current product model and did not add enough value relative to the added complexity.
 
 **Steps**
 

@@ -234,6 +234,13 @@ Checkpoint
 - Changing schedules updates the reported gaps.
 - Gap calculations pass fixture-based tests.
 
+Status
+
+- Cancelled.
+- The section was implemented experimentally, then removed from the UI.
+- Reason: the meaning was too easy to misread because it showed gaps in non-target coverage rather than true global uncovered time.
+- Decision: keep pairwise overlap and shared overlap views, and do not ship handoff-gap analysis in v1.
+
 ## Iteration 10: Persistence and Shareable URLs
 
 - Save selected zones, order, targets, business hours, and view settings to local storage.

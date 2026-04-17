@@ -4,7 +4,7 @@ Greenfield React + TypeScript SPA for planning overlap across multiple IANA time
 
 ## Current Status
 
-Iterations 0–8 complete. The app is a fully interactive timezone overlap planning tool.
+Iterations 0–8 complete. Iteration 9 was cancelled. The app is a fully interactive timezone overlap planning tool.
 
 - Vite + React + TypeScript scaffold with ESLint, Prettier, and Vitest
 - Zustand state management with 9 actions; seeded with New York, London, Tokyo
@@ -75,4 +75,4 @@ Then run `npm run dev` and exercise the reorder, target toggle, and reset flows 
 
 ## Next Slice
 
-Iteration 9: handoff gap analysis — detect and display uncovered windows in the 24-hour UTC day for follow-the-sun coverage planning.
+Iteration 10: persistence and shareable URLs — restore scenarios from local storage and share them via the URL.
