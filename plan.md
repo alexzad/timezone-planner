@@ -4,23 +4,23 @@ Build a greenfield React + TypeScript SPA for comparing multiple IANA time zones
 
 **Current Status**
 
-Iterations 0–7 complete. App features:
+Iterations 0–8 complete, plus an out-of-iteration expansion of the timezone database. App features:
 
 - React + TypeScript SPA with Vite, Zustand state, @dnd-kit drag-and-drop, luxon for timezone math.
-- Seeded with 3 zones (New York, London, Tokyo); searchable 81-timezone IANA database.
-- **Timeline view**: 24-hour grid per zone (12 on mobile) with hourly rulers, current-time highlighting, business-hour background colors, and **all-zone overlap visualization**.
-- **Overlap calculation**: Computes shared windows across ALL selected zones using DST-safe UTC interval math from Iteration 5.
+- Seeded with 3 zones (New York, London, Tokyo); searchable ~160-entry city database (new IANA zones + aliases).
+- **Timeline view**: 24-hour grid per zone (12 on mobile) with hourly rulers, current-time highlighting, business-hour background colors, and all-zone overlap visualization.
+- **Overlap calculation**: Computes shared windows across ALL selected zones using DST-safe UTC interval math.
 - **Overlap legend**: Visual indicator and explanatory text when shared overlap windows exist.
-- **Overlap cells**: Timeline cells in shared overlap windows highlighted with blue gradient and distinct visual styling.
+- **Pairwise overlap matrix**: Table below the timeline stack; shows total overlap minutes for every zone pair with intensity-scaled cell backgrounds; horizontally scrollable.
 - Business-hours configuration (start/end times, support for overnight spans) with live timeline updates.
 - Drag-and-drop zone reordering plus keyboard controls (arrow keys).
 - Target zone marking with visual distinction and timeline anchoring.
 - DST-safe timezone conversion utilities with UTC interval calculations.
-- Comprehensive test coverage (56 tests: 35 timezone + 13 store + 8 app).
+- Comprehensive test coverage (58 tests: 35 timezone + 13 store + 10 app).
 - Responsive layout: desktop (2-column sidebar + timeline), mobile (single column, 12-hour timeline).
 - All validation passing: tests, lint, build, format.
 
-Next: Iteration 8 (pairwise overlap matrix for pair-by-pair coverage analysis).
+Next: Iteration 9 (handoff gap analysis — detect uncovered UTC windows for 24x7 planning).
 
 **Steps**
 

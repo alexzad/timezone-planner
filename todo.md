@@ -210,6 +210,17 @@ Status
 - Added 2 new integration tests: matrix structure (headers, self-cells) and known 3h NY↔London overlap.
 - All tests passing (58 total: 35 timezone + 13 store + 10 app), lint clean, build successful (CSS 8.89 KB).
 
+## Out-of-Iteration: Timezone Database Expansion
+
+Status
+
+- Complete (landed alongside Iteration 8 fixes).
+- Expanded src/data/timezones.ts from 81 to ~160 entries.
+- Added new IANA zones: America/Phoenix, America/Edmonton, America/Winnipeg, America/Guatemala, America/Panama, America/Montevideo, Africa/Algiers, Africa/Tunis, Africa/Accra, Africa/Khartoum, Africa/Addis_Ababa, Africa/Luanda, Africa/Kinshasa, Asia/Kuwait, Asia/Baghdad, Asia/Muscat, Asia/Jerusalem, Asia/Tbilisi, Asia/Yerevan, Asia/Yekaterinburg, Asia/Novosibirsk, Asia/Ulaanbaatar, Asia/Vladivostok, Pacific/Port_Moresby.
+- Added city aliases for major cities sharing a zone (e.g., Beijing, Osaka, Barcelona, Milan, Boston, São Paulo, Lahore).
+- Fixed React key collision in search dropdown: key changed from zone → zone::city to support multiple entries per IANA zone.
+- Updated search test to use getAllByRole instead of getByRole for cities with multiple matches.
+
 ## Iteration 9: Handoff Gap Analysis
 
 - Compute handoff gaps for 24x7 coverage planning.
