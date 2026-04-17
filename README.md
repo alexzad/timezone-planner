@@ -4,30 +4,32 @@ Greenfield React + TypeScript SPA for planning overlap across multiple IANA time
 
 ## Current Status
 
-Iteration 3 is partially in place.
+Iterations 0–7 complete. The app is a fully interactive timezone overlap planning tool.
 
-- Vite + React + TypeScript scaffold
-- Core dependencies for timezone math, app state, and drag-and-drop
-- Basic app shell with sidebar, timeline, and analysis regions
-- ESLint, Prettier, and Vitest configured
-- Seeded timezone scenario rendered from Zustand state
-- Target-zone toggles wired through the app store
-- Keyboard reorder controls for moving zones earlier or later
-- Per-card hour rulers showing each timezone's local time of day
-- UTC-anchored timeline: target zone's business hours centered; all other zones shifted by real offset
-- Business-hour highlighting derived from each zone's configured window, including overnight spans
-- Timezone search box (81 IANA zones) with live dropdown, duplicate prevention, and remove controls
+- Vite + React + TypeScript scaffold with ESLint, Prettier, and Vitest
+- Zustand state management with 9 actions; seeded with New York, London, Tokyo
+- 81-timezone IANA search with live dropdown, duplicate prevention, and remove controls
+- Drag-and-drop zone reordering (@dnd-kit) plus keyboard controls (↑/↓)
+- Target-zone selection with visual distinction and timeline anchoring
+- Per-zone editable business hours (start/end, supports midnight-crossing windows)
+- UTC-anchored 24-hour timeline: target zone's business hours centered; all zones aligned to real offset
+- Per-card local hour rulers; business-hour cells highlighted with zone accent color
+- **All-zone overlap visualization**: shared overlap windows shown with blue gradient cells and a legend
+- DST-safe timezone utilities (18 functions): UTC interval math, pairwise/all-zone overlaps, coverage gaps
+- 56 automated tests (35 timezone utilities + 13 store unit + 8 app integration)
+- Responsive layout: sidebar + timeline on desktop; single column on mobile; 12-hour rulers on narrow screens
 
 ## Latest Checkpoint
 
-Test the timezone comparison view in the browser.
+Run the app and explore the full feature set.
 
-- Type in the search box to find and add new timezones from the dropdown.
-- Duplicate adds are silently blocked.
-- Remove any zone with the × button; the target is reassigned automatically if needed.
-- Reorder zones with the arrow controls and verify the timeline rows update immediately.
-- Toggle target zones and confirm that zone's business hours move to the visual center.
-- Each row's hour ruler shows its own local times — London is shifted ~5 h right of New York, Tokyo ~13 h.
+- Search and add timezones from the 81-zone dropdown; duplicates are blocked.
+- Remove any zone with ×; the target reassigns automatically.
+- Drag zones to reorder or use the ↑/↓ arrow controls.
+- Toggle target zones to shift the visual center of the timeline to that zone's business hours.
+- Edit start/end times per zone to see the business-hour highlighting update live.
+- Set overlapping business hours across zones to see the blue all-zone overlap indicator appear on the timeline.
+- The legend below the heading explains the overlap highlight when visible.
 
 ## Commands
 
@@ -70,4 +72,4 @@ Then run `npm run dev` and exercise the reorder, target toggle, and reset flows 
 
 ## Next Slice
 
-Iteration 2 adds timezone search, duplicate prevention, and add or remove flows.
+Iteration 8: pairwise overlap matrix — a table showing the total overlap duration for each pair of selected zones.
