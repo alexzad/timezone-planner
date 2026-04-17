@@ -23,7 +23,7 @@ export const ALL_TIMEZONES: TimezoneEntry[] = [
   { zone: 'America/Los_Angeles', city: 'San Francisco', region: 'Americas' },
   { zone: 'America/Los_Angeles', city: 'Seattle', region: 'Americas' },
   { zone: 'America/Anchorage', city: 'Anchorage', region: 'Americas' },
-  { zone: 'America/Honolulu', city: 'Honolulu', region: 'Americas' },
+  { zone: 'Pacific/Honolulu', city: 'Honolulu', region: 'Americas' },
   { zone: 'America/Toronto', city: 'Toronto', region: 'Americas' },
   { zone: 'America/Toronto', city: 'Montreal', region: 'Americas' },
   { zone: 'America/Toronto', city: 'Ottawa', region: 'Americas' },
