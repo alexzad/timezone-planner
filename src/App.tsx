@@ -363,7 +363,7 @@ function App() {
               >
                 {filteredTimezones.map((tz) => (
                   <li
-                    key={tz.zone}
+                    key={`${tz.zone}::${tz.city}`}
                     role="option"
                     aria-selected={false}
                     className="search-option"

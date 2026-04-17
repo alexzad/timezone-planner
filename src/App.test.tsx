@@ -149,8 +149,8 @@ describe('App shell', () => {
     fireEvent.focus(input)
     fireEvent.change(input, { target: { value: 'Paris' } })
 
-    const option = screen.getByRole('option', { name: /paris/i })
-    fireEvent.mouseDown(option)
+    const options = screen.getAllByRole('option', { name: /paris/i })
+    fireEvent.mouseDown(options[0])
 
     expect(useAppStore.getState().selectedZones).toHaveLength(4)
     expect(useAppStore.getState().selectedZones.map((z) => z.city)).toContain(

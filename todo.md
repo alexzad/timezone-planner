@@ -206,7 +206,7 @@ Status
 - Self-diagonal cells show em-dash; overlap cells show duration formatted as "Xh Ym" or "Xh" or "none".
 - Cell background intensity scales linearly with duration (0=transparent, 8h=full blue).
 - Horizontally scrollable wrapper so wide tables stay readable at any viewport width.
-- Added CSS: .overlap-matrix, .overlap-matrix__cell, --has-overlap, --no-overlap, --self, col/row headers.
+- Added CSS: .overlap-matrix, .overlap-matrix\_\_cell, --has-overlap, --no-overlap, --self, col/row headers.
 - Added 2 new integration tests: matrix structure (headers, self-cells) and known 3h NY↔London overlap.
 - All tests passing (58 total: 35 timezone + 13 store + 10 app), lint clean, build successful (CSS 8.89 KB).
 
