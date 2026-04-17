@@ -1,5 +1,5 @@
 :root {
-  font-family: Inter, 'Segoe UI', sans-serif;
+  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: #d7dde8;
@@ -21,15 +21,75 @@
   -moz-osx-font-smoothing: grayscale;
 
   --page-background: transparent;
+  --canvas-color: #0d1117;
   --panel-color: rgba(16, 22, 31, 0.82);
   --status-panel-color: rgba(24, 30, 40, 0.92);
   --surface-color: rgba(255, 255, 255, 0.04);
+  --surface-hover-color: rgba(255, 255, 255, 0.06);
+  --surface-inset-color: rgba(255, 255, 255, 0.02);
   --border-color: rgba(215, 221, 232, 0.14);
   --soft-border-color: rgba(215, 221, 232, 0.12);
   --heading-color: #f4f7fb;
   --muted-text-color: #9ba7b7;
   --accent-color: #ffc400;
   --panel-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  --theme-toggle-shell: rgba(7, 11, 17, 0.26);
+  --theme-toggle-highlight: rgba(255, 255, 255, 0.05);
+  --theme-toggle-active: linear-gradient(180deg, #273241 0%, #1a222f 100%);
+  --theme-toggle-active-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  --input-fill-color: rgba(255, 255, 255, 0.04);
+  --legend-fill-color: rgba(255, 255, 255, 0.04);
+  --legend-stripe-color: rgba(255, 255, 255, 0.08);
+  --legend-marker-fill: rgba(255, 255, 255, 0.06);
+  --badge-fill-color: rgba(255, 255, 255, 0.06);
+  --track-fill-color: rgba(255, 255, 255, 0.05);
+  --track-stripe-color: rgba(255, 255, 255, 0.05);
+  --track-accent-mix: rgba(255, 255, 255, 0.1);
+  --matrix-self-fill-color: rgba(255, 255, 255, 0.03);
+  --current-hour-outline-color: rgba(255, 255, 255, 0.72);
+}
+
+:root[data-theme='light'] {
+  color: #16303f;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 173, 51, 0.2),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at right center,
+      rgba(69, 145, 212, 0.18),
+      transparent 28%
+    ),
+    linear-gradient(180deg, #f6efe2 0%, #edf4fb 100%);
+  --page-background: transparent;
+  --canvas-color: #edf4fb;
+  --panel-color: rgba(255, 250, 242, 0.86);
+  --status-panel-color: rgba(255, 248, 237, 0.92);
+  --surface-color: rgba(255, 255, 255, 0.72);
+  --surface-hover-color: rgba(255, 255, 255, 0.92);
+  --surface-inset-color: rgba(255, 255, 255, 0.65);
+  --border-color: rgba(22, 48, 63, 0.12);
+  --soft-border-color: rgba(22, 48, 63, 0.12);
+  --heading-color: #173041;
+  --muted-text-color: #5f7688;
+  --accent-color: #db8e1a;
+  --panel-shadow: 0 24px 60px rgba(31, 64, 87, 0.12);
+  --theme-toggle-shell: rgba(232, 221, 206, 0.74);
+  --theme-toggle-highlight: rgba(255, 255, 255, 0.65);
+  --theme-toggle-active: linear-gradient(180deg, #ffffff 0%, #f0e5d8 100%);
+  --theme-toggle-active-shadow: 0 10px 22px rgba(88, 66, 33, 0.12);
+  --input-fill-color: rgba(255, 255, 255, 0.84);
+  --legend-fill-color: rgba(255, 255, 255, 0.68);
+  --legend-stripe-color: rgba(23, 48, 65, 0.08);
+  --legend-marker-fill: rgba(255, 255, 255, 0.78);
+  --badge-fill-color: rgba(255, 255, 255, 0.82);
+  --track-fill-color: rgba(23, 48, 65, 0.08);
+  --track-stripe-color: rgba(255, 255, 255, 0.36);
+  --track-accent-mix: rgba(255, 255, 255, 0.58);
+  --matrix-self-fill-color: rgba(23, 48, 65, 0.06);
+  --current-hour-outline-color: rgba(23, 48, 65, 0.62);
 }
 
 * {
@@ -37,13 +97,14 @@
 }
 
 html {
-  background: #0d1117;
+  background: var(--canvas-color);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   background: var(--page-background);
+  color: var(--heading-color);
 }
 
 body,

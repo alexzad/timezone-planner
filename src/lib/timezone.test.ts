@@ -222,14 +222,12 @@ describe('timezone utilities', () => {
       expect(overlap).toBe(180)
     })
 
-    it('computes zero overlap when business hours do not overlap', () => {
+    it('computes correct overlap for NY overnight shift vs London daytime', () => {
       const date = DateTime.fromISO('2025-01-15')
-      // New York 22:00-06:00, London 08:00-14:00
-      // NY 22:00 EST = 03:00 UTC (next day)
-      // NY 06:00 EST = 11:00 UTC (next day)
-      // London 08:00 GMT = 08:00 UTC
-      // London 14:00 GMT = 14:00 UTC
-      // No overlap
+      // NY 22:00–06:00 EST: the overnight window that falls within UTC Jan 15
+      // is the one that ends at 06:00 EST = 11:00 UTC Jan 15 (03:00–11:00 UTC).
+      // London 08:00–14:00 GMT = 08:00–14:00 UTC.
+      // Overlap: 08:00–11:00 UTC = 180 min.
       const overlap = computePairwiseOverlapDuration(
         'America/New_York',
         '22:00',
@@ -237,6 +235,23 @@ describe('timezone utilities', () => {
         'Europe/London',
         '08:00',
         '14:00',
+        date,
+      )
+      expect(overlap).toBe(180)
+    })
+
+    it('computes zero overlap for genuinely non-overlapping daytime schedules', () => {
+      const date = DateTime.fromISO('2025-01-15')
+      // NY 09:00–17:00 EST = 14:00–22:00 UTC
+      // Tokyo 09:00–17:00 JST = 00:00–08:00 UTC
+      // No overlap within the same UTC day.
+      const overlap = computePairwiseOverlapDuration(
+        'America/New_York',
+        '09:00',
+        '17:00',
+        'Asia/Tokyo',
+        '09:00',
+        '17:00',
         date,
       )
       expect(overlap).toBe(0)

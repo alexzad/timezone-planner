@@ -148,6 +148,81 @@ export function getBusinessHoursUtcInterval(
 }
 
 /**
+ * Compute UTC intervals for a single known local day start (internal helper).
+ * Avoids re-anchoring — callers supply the pre-computed local-day DateTime.
+ */
+function computeIntervalsForLocalDay(
+  tzName: string,
+  startMin: number,
+  endMin: number,
+  localDayStart: DateTime,
+): UtcInterval[] {
+  const windowStart = localDayStart.plus({ minutes: startMin })
+  const windowEnd = localDayStart.plus({ minutes: endMin })
+
+  if (startMin === endMin) {
+    const utcStart = convertLocalToUtc(tzName, localDayStart)
+    const utcEnd = convertLocalToUtc(tzName, localDayStart.plus({ days: 1 }))
+    return [{ start: utcStart.toMillis() / 60000, end: utcEnd.toMillis() / 60000 }]
+  }
+
+  if (startMin < endMin) {
+    const utcStart = convertLocalToUtc(tzName, windowStart)
+    const utcEnd = convertLocalToUtc(tzName, windowEnd)
+    return [{ start: utcStart.toMillis() / 60000, end: utcEnd.toMillis() / 60000 }]
+  }
+
+  // Midnight-crossing
+  const utcStart = convertLocalToUtc(tzName, windowStart)
+  const midnightLocal = localDayStart.plus({ days: 1 })
+  const utcMidnight = convertLocalToUtc(tzName, midnightLocal)
+  const utcEnd = convertLocalToUtc(tzName, windowEnd.plus({ days: 1 }))
+  return [
+    { start: utcStart.toMillis() / 60000, end: utcMidnight.toMillis() / 60000 },
+    { start: utcMidnight.toMillis() / 60000, end: utcEnd.toMillis() / 60000 },
+  ]
+}
+
+/**
+ * Find the business-hour UTC intervals that fall within a UTC millisecond window
+ * by scanning the local calendar days adjacent to the window start.
+ * This handles all timezone-offset edge cases: zones that are already past
+ * midnight locally (e.g. UTC+5:30 at 00:49) and highly-positive-offset zones
+ * whose local early-morning hours fall on the previous UTC date (e.g. UTC+9
+ * at 03:00 → previous UTC day 18:00).
+ */
+function getBusinessHoursInWindow(
+  tzName: string,
+  startTimeStr: string,
+  endTimeStr: string,
+  windowStartMs: number,
+  windowEndMs: number,
+): UtcInterval[] {
+  const startMin = parseTimeToMinutes(startTimeStr)
+  const endMin = parseTimeToMinutes(endTimeStr)
+  const localBase = DateTime.fromMillis(windowStartMs * 60000, { zone: 'UTC' })
+    .setZone(tzName)
+    .startOf('day')
+
+  const result: UtcInterval[] = []
+
+  // Scan from 1 day before to 2 days after to capture all edges
+  for (let dayOffset = -1; dayOffset <= 2; dayOffset++) {
+    const localDayStart = localBase.plus({ days: dayOffset })
+    const intervals = computeIntervalsForLocalDay(tzName, startMin, endMin, localDayStart)
+    for (const interval of intervals) {
+      const clippedStart = Math.max(interval.start, windowStartMs)
+      const clippedEnd = Math.min(interval.end, windowEndMs)
+      if (clippedStart < clippedEnd) {
+        result.push({ start: clippedStart, end: clippedEnd })
+      }
+    }
+  }
+
+  return result
+}
+
+/**
  * Check if two UTC intervals overlap.
  * @param a First interval
  * @param b Second interval
@@ -207,18 +282,15 @@ export function computePairwiseOverlapDuration(
   endB: string,
   referenceDate: DateTime = DateTime.now(),
 ): number {
-  const intervalsA = getBusinessHoursUtcInterval(
-    tzA,
-    startA,
-    endA,
-    referenceDate,
-  )
-  const intervalsB = getBusinessHoursUtcInterval(
-    tzB,
-    startB,
-    endB,
-    referenceDate,
-  )
+  // Anchor comparison to the current UTC day so that zones on different local
+  // calendar dates (e.g. a UTC+5:30 zone already past midnight) are still
+  // compared against the same temporal window.
+  const utcDay = referenceDate.toUTC().startOf('day')
+  const windowStartMs = utcDay.toMillis() / 60000
+  const windowEndMs = utcDay.plus({ days: 1 }).toMillis() / 60000
+
+  const intervalsA = getBusinessHoursInWindow(tzA, startA, endA, windowStartMs, windowEndMs)
+  const intervalsB = getBusinessHoursInWindow(tzB, startB, endB, windowStartMs, windowEndMs)
 
   let totalOverlap = 0
   for (const ia of intervalsA) {
@@ -241,30 +313,36 @@ export function computeAllZoneOverlap(
   referenceDate: DateTime = DateTime.now(),
 ): UtcInterval[] {
   if (zones.length === 0) return []
+
+  const utcDay = referenceDate.toUTC().startOf('day')
+  const windowStartMs = utcDay.toMillis() / 60000
+  const windowEndMs = utcDay.plus({ days: 1 }).toMillis() / 60000
+
   if (zones.length === 1) {
-    return getBusinessHoursUtcInterval(
+    return getBusinessHoursInWindow(
       zones[0].tz,
       zones[0].start,
       zones[0].end,
-      referenceDate,
+      windowStartMs,
+      windowEndMs,
     )
   }
 
-  // Start with the first zone's intervals
-  let overlap = getBusinessHoursUtcInterval(
+  let overlap = getBusinessHoursInWindow(
     zones[0].tz,
     zones[0].start,
     zones[0].end,
-    referenceDate,
+    windowStartMs,
+    windowEndMs,
   )
 
-  // Intersect with each remaining zone
   for (let i = 1; i < zones.length; i++) {
-    const next = getBusinessHoursUtcInterval(
+    const next = getBusinessHoursInWindow(
       zones[i].tz,
       zones[i].start,
       zones[i].end,
-      referenceDate,
+      windowStartMs,
+      windowEndMs,
     )
     const newOverlap: UtcInterval[] = []
     for (const io of overlap) {

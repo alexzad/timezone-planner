@@ -4,7 +4,7 @@ Greenfield React + TypeScript SPA for planning overlap across multiple IANA time
 
 ## Current Status
 
-Iterations 0–8, 10, and 11 are complete. Iteration 9 was cancelled. The app is a fully interactive timezone overlap planning tool.
+Iterations 0–8, 10, 11, and 12 are complete. Iteration 9 was cancelled. The app is a fully interactive timezone overlap planning tool.
 
 - Vite + React + TypeScript scaffold with ESLint, Prettier, and Vitest
 - Zustand state management with 9 actions; seeded with New York, London, Tokyo
@@ -19,9 +19,11 @@ Iterations 0–8, 10, and 11 are complete. Iteration 9 was cancelled. The app is
 - **Pairwise overlap matrix**: table showing total overlap duration for every zone pair; intensity-colored cells; scrollable for many zones
 - **Persistence and sharing**: selected zones, order, target flags, and business hours restore from local storage, load from share URLs, and can be copied from the sidebar
 - **Accessibility and responsive pass**: keyboard search selection, visible focus states, non-color timeline legend/cues, and scroll-safe narrow-screen timeline cards
-- **Playwright smoke tests**: Chromium-based end-to-end checks for app load, keyboard search, and overlap legend behavior
-- DST-safe timezone utilities (18 functions): UTC interval math, pairwise/all-zone overlaps, coverage gaps
-- 67 automated checks (35 timezone utilities + 16 store unit + 13 app integration + 3 Playwright E2E smoke)
+- **Light and dark theme**: radio toggle in the page header switches themes; choice persists via local storage and is applied immediately
+- **Playwright smoke tests**: Chromium-based end-to-end checks for app load, keyboard search, overlap legend behavior, and theme switching
+- DST-safe timezone utilities (20 functions): UTC interval math, pairwise/all-zone overlaps, coverage gaps, UTC-windowed overlap engine
+- **Overlap UTC-window fix**: pairwise and all-zone overlap calculations now compare all zones against the same UTC 24-hour window, so half-hour-offset zones (e.g. Asia/Kolkata) and zones that have crossed midnight locally produce correct results
+- 70 automated checks (36 timezone utilities + 16 store unit + 14 app integration + 4 Playwright E2E smoke)
 - Responsive layout: sidebar + timeline on desktop; single column on mobile; horizontal scrolling preserved where dense timeline or matrix data needs it
 
 ## Latest Checkpoint
@@ -40,6 +42,7 @@ Run the app and explore the full feature set, including persisted and shareable 
 - Scroll down below the zone timeline cards to see the **pairwise overlap matrix** — a table of total overlap minutes for every zone pair.
 - Reload the page to confirm the current scenario restores automatically.
 - Use **Copy share URL** in the sidebar, open the link in a clean tab, and confirm the same scenario loads from the URL.
+- Use the **Light / Dark** radio toggle in the top-right of the header to switch themes; the choice persists across reloads.
 
 ## Commands
 
@@ -72,7 +75,7 @@ npm run test:e2e
 npm run format:check
 ```
 
-Then run `npm run dev` and exercise the reorder, target toggle, keyboard search selection, reset, reload, narrow-screen layout, simplified overlap legend, and share-link restore flows in the UI.
+Then run `npm run dev` and exercise the reorder, target toggle, keyboard search selection, reset, reload, narrow-screen layout, simplified overlap legend, share-link restore, and light/dark theme toggle flows in the UI.
 
 ## Deployment Note
 
@@ -98,7 +101,7 @@ Then run `npm run dev` and exercise the reorder, target toggle, keyboard search 
 
 ## Next Slice
 
-Iteration 12: polish and release candidate.
+v1 is complete. Stretch items: UTC scrubber, saved named scenarios, coverage heatmap.
 
 ## Roadmap Docs
 

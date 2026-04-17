@@ -306,6 +306,15 @@ Checkpoint
 - There are no blocking UI or logic issues in the planned scope.
 - Build, lint, and tests all pass.
 
+Status
+
+- Complete.
+- Light and dark theme toggle added: radio control in the page header, persisted via local storage, applied to `<html data-theme>` via CSS custom properties. Playwright smoke test covers toggle and persistence.
+- Vitest test discovery tightened: `include` restricted to `src/**` so node_modules and Playwright specs are no longer scanned by `npm run test`.
+- Overlap UTC-window fix: `computePairwiseOverlapDuration` and `computeAllZoneOverlap` now use a UTC-day-anchored window with adjacent-day scanning. Fixes incorrect "none" results for zones with half-hour offsets (e.g. Asia/Kolkata +5:30) or any zone that has crossed midnight locally at query time.
+- GitHub Pages deploy skill added at `.github/skills/deploy-github-pages/` documenting the safe worktree-based publish workflow.
+- All checks passing: 70 tests (36 timezone + 16 store + 14 app) and 4 Playwright E2E smoke tests; lint, build, format clean.
+
 ## Stretch Items After v1
 
 - Add a UTC reference-time scrubber.

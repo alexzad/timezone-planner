@@ -4,7 +4,7 @@ Build a greenfield React + TypeScript SPA for comparing multiple IANA time zones
 
 **Current Status**
 
-Iterations 0–8, 10, and 11 complete, Iteration 9 cancelled, plus an out-of-iteration expansion of the timezone database. App features:
+Iterations 0–8, 10, 11, and 12 complete, Iteration 9 cancelled, plus out-of-iteration work. App features:
 
 - React + TypeScript SPA with Vite, Zustand state, @dnd-kit drag-and-drop, luxon for timezone math.
 - Seeded with 3 zones (New York, London, Tokyo); searchable ~160-entry city database (new IANA zones + aliases).
@@ -20,11 +20,13 @@ Iterations 0–8, 10, and 11 complete, Iteration 9 cancelled, plus an out-of-ite
 - Drag-and-drop zone reordering plus keyboard controls (arrow keys).
 - Target zone marking with visual distinction and timeline anchoring.
 - DST-safe timezone conversion utilities with UTC interval calculations.
-- Comprehensive test coverage (63 in-repo tests: 35 timezone + 16 store + 12 app) plus 3 Playwright E2E smoke tests.
+- **Light and dark theme**: radio toggle in the page header; persisted via local storage.
+- **Overlap UTC-window fix**: pairwise and all-zone overlap now compare all zones against the same UTC day window; resolves incorrect "none" results for half-hour-offset zones (e.g. Asia/Kolkata) that have crossed midnight locally.
+- Comprehensive test coverage (70 in-repo checks: 36 timezone + 16 store + 14 app + 4 Playwright E2E smoke).
 - Responsive layout: desktop (2-column sidebar + timeline), mobile (single column, 12-hour timeline).
 - All validation passing: tests, Playwright E2E, lint, build, format.
 
-Next: Iteration 12 (polish and release candidate).
+Next: stretch items or v2 planning.
 
 **Cancelled Work**
 

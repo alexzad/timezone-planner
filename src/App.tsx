@@ -12,7 +12,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { DateTime } from 'luxon'
 import './App.css'
@@ -27,6 +27,47 @@ import {
 } from './lib/timezone'
 
 const HOURS_IN_DAY = 24
+const THEME_STORAGE_KEY = 'timezone-planner/theme'
+
+type ThemeMode = 'dark' | 'light'
+
+const isThemeMode = (value: string | null): value is ThemeMode =>
+  value === 'dark' || value === 'light'
+
+const getThemeStorage = (): Storage | null => {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const candidate = window.localStorage
+  if (
+    candidate &&
+    typeof candidate.getItem === 'function' &&
+    typeof candidate.setItem === 'function'
+  ) {
+    return candidate
+  }
+
+  return null
+}
+
+const readInitialTheme = (): ThemeMode => {
+  const storage = getThemeStorage()
+  const storedTheme = storage?.getItem(THEME_STORAGE_KEY) ?? null
+  if (isThemeMode(storedTheme)) {
+    return storedTheme
+  }
+
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: light)').matches
+  ) {
+    return 'light'
+  }
+
+  return 'dark'
+}
 
 const isHourWithinBusinessWindow = (
   hour: number,
@@ -288,12 +329,20 @@ function App() {
   } = useAppStore()
 
   const [query, setQuery] = useState('')
+  const [theme, setTheme] = useState<ThemeMode>(readInitialTheme)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [activeSearchIndex, setActiveSearchIndex] = useState(0)
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>(
     'idle',
   )
   const referenceDate = DateTime.now()
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+
+    const storage = getThemeStorage()
+    storage?.setItem(THEME_STORAGE_KEY, theme)
+  }, [theme])
 
   const sensors = useSensors(useSensor(PointerSensor))
 
@@ -364,9 +413,37 @@ function App() {
   return (
     <div className="app-shell">
       <header className="hero-panel">
-        <div>
-          <p className="eyebrow">24x7 Operations Planner</p>
-          <h1>Time zone overlap workspace</h1>
+        <div className="hero-panel__content">
+          <div>
+            <p className="eyebrow">24x7 Operations Planner</p>
+            <h1>Time zone overlap workspace</h1>
+          </div>
+
+          <form className="theme-toggle" aria-label="Color theme">
+            <span className="theme-toggle__label">Theme</span>
+            <div className="theme-toggle__options" role="radiogroup">
+              <label className="theme-toggle__option">
+                <input
+                  type="radio"
+                  name="theme"
+                  value="light"
+                  checked={theme === 'light'}
+                  onChange={() => setTheme('light')}
+                />
+                <span>Light</span>
+              </label>
+              <label className="theme-toggle__option">
+                <input
+                  type="radio"
+                  name="theme"
+                  value="dark"
+                  checked={theme === 'dark'}
+                  onChange={() => setTheme('dark')}
+                />
+                <span>Dark</span>
+              </label>
+            </div>
+          </form>
         </div>
       </header>
 

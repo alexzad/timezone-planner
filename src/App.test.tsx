@@ -30,6 +30,17 @@ describe('App shell', () => {
     expect(screen.getByLabelText('New York local hours')).toBeInTheDocument()
     expect(screen.getByLabelText('London local hours')).toBeInTheDocument()
     expect(screen.getByLabelText('Tokyo local hours')).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /dark/i })).toBeChecked()
+    expect(screen.getByRole('radio', { name: /light/i })).not.toBeChecked()
+  })
+
+  it('switches to the light theme and persists the choice', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('radio', { name: /light/i }))
+
+    expect(screen.getByRole('radio', { name: /light/i })).toBeChecked()
+    expect(document.documentElement.dataset.theme).toBe('light')
   })
 
   it('renders business hours from each timezone preset instead of a shared fixed range', () => {

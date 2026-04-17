@@ -42,4 +42,36 @@ test.describe('time zone overlap workspace', () => {
     ).toBeVisible()
     await expect(page.getByText(/shared overlap window/i)).toHaveCount(0)
   })
+
+  test('switches between dark and light themes from the header toggle', async ({
+    page,
+  }) => {
+    await page.goto('/')
+
+    await page.evaluate(() => {
+      window.localStorage.setItem('timezone-planner/theme', 'dark')
+    })
+    await page.reload()
+
+    const lightTheme = page.getByRole('radio', { name: /light/i })
+    const darkTheme = page.getByRole('radio', { name: /dark/i })
+
+    await expect(darkTheme).toBeChecked()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+
+    await lightTheme.check({ force: true })
+
+    await expect(lightTheme).toBeChecked()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+
+    await page.reload()
+
+    await expect(lightTheme).toBeChecked()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+
+    await darkTheme.check({ force: true })
+
+    await expect(darkTheme).toBeChecked()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  })
 })
