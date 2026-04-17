@@ -40,8 +40,9 @@ Build a greenfield React + TypeScript SPA for comparing multiple IANA time zones
 
 - Stack: React + TypeScript SPA.
 - Timezone selection: full IANA list with search/lookup.
-- Targets: target zones should highlight, prioritize overlap calculations, and support target-focused filtering.
-- Business hours: per-timezone configurable with region-aware defaults where feasible; v1 excludes holidays and one-off exceptions.
+- Targets: target zones should highlight, prioritize overlap calculations, and support target-focused filtering. The target zone's business-hours midpoint drives the UTC anchor of the shared timeline so that zone always appears centered.
+- Business hours: per-timezone configurable with region-aware defaults where feasible; v1 excludes holidays and one-off exceptions. Overnight windows (e.g. 22:00–06:00) are supported.
+- Timeline rendering: slot-based with a shared UTC reference window. Each card derives local hours from the zone's real UTC offset. The target zone's business-hours midpoint is computed in UTC and used as the center column, so all zone tracks are horizontally aligned to real time differences.
 - Persistence: both local storage and shareable URL state.
 - Core outputs for v1: business-hours visualization, computed shared overlap windows, pairwise overlap matrix, and coverage or handoff-gap analysis.
 - Preferred technical direction: exact interval-based calculations for overlap logic plus slot-based rendering for the visualization layer.

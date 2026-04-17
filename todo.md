@@ -73,7 +73,9 @@ Status
 - In progress.
 - Complete: keyboard move earlier or later controls backed by app state.
 - Complete: target-zone toggles with visual distinction in sidebar and timeline.
-- Verified: seeded reorder flow updates the sidebar list and timeline rows together.
+- Complete: UTC-anchored timeline — target zone's business hours centered, all rows shifted by real timezone offset.
+- Complete: per-card local hour rulers that show each zone's actual local time rather than a shared 0–23 scale.
+- Complete: business-hour highlighting derived from each zone's configured window including overnight spans.
 - Next: drag-and-drop ordering to complement the keyboard controls.
 
 ## Iteration 4: Business Hours Model
