@@ -13,15 +13,20 @@ Iteration 3 is partially in place.
 - Seeded timezone scenario rendered from Zustand state
 - Target-zone toggles wired through the app store
 - Keyboard reorder controls for moving zones earlier or later
+- Per-card hour rulers showing each timezone's local time of day
+- UTC-anchored timeline: target zone's business hours centered; all other zones shifted by real offset
+- Business-hour highlighting derived from each zone's configured window, including overnight spans
 
 ## Latest Checkpoint
 
-You can now test a real state-backed scenario in the browser.
+Test the timezone comparison view in the browser.
 
 - Reorder seeded zones with the arrow controls in the sidebar.
 - Verify the timeline rows follow the same order immediately.
-- Toggle target zones and confirm the target count and highlighted rows update.
-- Reset targets and confirm the primary seeded zone becomes the only target again.
+- Toggle target zones and confirm that zone's business hours move to the visual center.
+- Each row's hour ruler shows its own local times — London is shifted ~5 h right of New York, Tokyo ~13 h.
+- Business-hour cells reflect each zone's configured start/end, including overnight windows.
+- Reset targets and confirm the first zone becomes the only target again.
 
 ## Commands
 

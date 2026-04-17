@@ -3,15 +3,71 @@ import { DateTime } from 'luxon'
 import './App.css'
 import { useAppStore } from './state/appStore'
 
-const iterationChecklist = [
-  'Core app state is defined',
-  'Seeded timezone scenario is loaded',
-  'Timezone list is rendered from state',
-  'Keyboard reorder controls update state immediately',
-]
+const HOURS_IN_DAY = 24
+
+const parseTimeToMinutes = (value: string): number => {
+  const [hours, minutes] = value.split(':').map(Number)
+
+  return hours * 60 + minutes
+}
+
+const isHourWithinBusinessWindow = (
+  hour: number,
+  start: string,
+  end: string,
+): boolean => {
+  const slotStart = hour * 60
+  const slotEnd = slotStart + 60
+  const businessStart = parseTimeToMinutes(start)
+  const businessEnd = parseTimeToMinutes(end)
+
+  if (businessStart === businessEnd) {
+    return true
+  }
+
+  if (businessStart < businessEnd) {
+    return slotStart < businessEnd && slotEnd > businessStart
+  }
+
+  return (
+    slotEnd > businessStart ||
+    slotStart < businessEnd ||
+    slotStart === 0 ||
+    slotEnd === HOURS_IN_DAY * 60
+  )
+}
+
+/**
+ * Returns the UTC hour that sits at the midpoint of the given business-hours
+ * window for a specific timezone offset. The result is used as the center of
+ * the shared 24-cell timeline so that the target zone's working day is
+ * visually centered and all other zones are shifted relative to it.
+ */
+const computeUtcCenterHour = (
+  businessStart: string,
+  businessEnd: string,
+  zoneOffsetMinutes: number,
+): number => {
+  const startMin = parseTimeToMinutes(businessStart)
+  const endMin = parseTimeToMinutes(businessEnd)
+  const totalMin = HOURS_IN_DAY * 60
+
+  let midLocalMinutes: number
+  if (startMin <= endMin) {
+    midLocalMinutes = (startMin + endMin) / 2
+  } else {
+    // overnight window — span wraps past midnight
+    const span = (endMin + totalMin - startMin) / 2
+    midLocalMinutes = (startMin + span) % totalMin
+  }
+
+  const utcMidMinutes =
+    (((midLocalMinutes - zoneOffsetMinutes) % totalMin) + totalMin) % totalMin
+
+  return Math.round(utcMidMinutes / 60) % HOURS_IN_DAY
+}
 
 function App() {
-  const updatedAt = DateTime.now().toFormat('ccc, dd LLL yyyy HH:mm')
   const {
     selectedZones,
     moveZoneEarlier,
@@ -19,7 +75,17 @@ function App() {
     toggleTarget,
     resetTargets,
   } = useAppStore()
-  const targetCount = selectedZones.filter((entry) => entry.isTarget).length
+
+  // Compute a shared UTC center hour from the first targeted zone so its
+  // business hours land in the middle of every timeline card.
+  const targetZone = selectedZones.find((z) => z.isTarget) ?? selectedZones[0]
+  const utcCenterHour = targetZone
+    ? computeUtcCenterHour(
+        targetZone.businessHours.start,
+        targetZone.businessHours.end,
+        DateTime.now().setZone(targetZone.zone).offset,
+      )
+    : 12
 
   return (
     <div className="app-shell">
@@ -27,22 +93,6 @@ function App() {
         <div>
           <p className="eyebrow">24x7 Operations Planner</p>
           <h1>Time zone overlap workspace</h1>
-          <p className="hero-copy">
-            Iteration 1 replaces the static preview with real application state,
-            a seeded global scenario, and target-zone toggles you can test.
-          </p>
-        </div>
-
-        <div className="hero-status" aria-label="Project readiness summary">
-          <span className="status-chip">Iteration 1</span>
-          <span className="status-text">
-            State-driven timezone preview ready
-          </span>
-          <span className="status-meta">
-            {selectedZones.length} zones loaded, {targetCount} target
-            {targetCount === 1 ? '' : 's'} selected
-          </span>
-          <span className="status-meta">Updated {updatedAt}</span>
         </div>
       </header>
 
@@ -141,15 +191,30 @@ function App() {
             <h2 id="timeline-heading">Seeded timezone rows</h2>
           </div>
 
-          <div className="timeline-ruler" aria-hidden="true">
-            {Array.from({ length: 24 }, (_, hour) => (
-              <span key={hour}>{hour.toString().padStart(2, '0')}</span>
-            ))}
-          </div>
-
           <div className="timeline-stack">
             {selectedZones.map((entry) => {
               const localNow = DateTime.now().setZone(entry.zone)
+              // Round to the nearest hour so half-hour offset zones (e.g.
+              // Asia/Kolkata) stay close to correct until the DST engine lands.
+              const zoneOffsetHours = Math.round(localNow.offset / 60)
+
+              // Build each cell from the shared UTC window so the tracks are
+              // horizontally aligned to real time differences.
+              const slots = Array.from({ length: HOURS_IN_DAY }, (_, i) => {
+                const utcHour =
+                  (utcCenterHour - 12 + i + HOURS_IN_DAY * 2) % HOURS_IN_DAY
+                const localHour =
+                  (utcHour + zoneOffsetHours + HOURS_IN_DAY * 2) % HOURS_IN_DAY
+                return {
+                  localHour,
+                  isBusinessHour: isHourWithinBusinessWindow(
+                    localHour,
+                    entry.businessHours.start,
+                    entry.businessHours.end,
+                  ),
+                  isCurrentHour: localNow.hour === localHour,
+                }
+              })
 
               return (
                 <article
@@ -175,24 +240,31 @@ function App() {
                     </div>
                   </div>
 
-                  <div className="timeline-mini-track" aria-hidden="true">
-                    {Array.from({ length: 24 }, (_, hour) => {
-                      const isBusinessHour = hour >= 9 && hour < 17
-                      const isCurrentHour = localNow.hour === hour
+                  <div
+                    className="timeline-card__ruler"
+                    aria-label={`${entry.city} local hours`}
+                  >
+                    {slots.map((slot, i) => (
+                      <span key={`${entry.id}-label-${i}`}>
+                        {slot.localHour.toString().padStart(2, '0')}
+                      </span>
+                    ))}
+                  </div>
 
-                      return (
-                        <span
-                          key={`${entry.id}-${hour}`}
-                          className={[
-                            'timeline-mini-track__cell',
-                            isBusinessHour ? 'is-business-hour' : '',
-                            isCurrentHour ? 'is-current-hour' : '',
-                          ]
-                            .filter(Boolean)
-                            .join(' ')}
-                        />
-                      )
-                    })}
+                  <div className="timeline-mini-track" aria-hidden="true">
+                    {slots.map((slot, i) => (
+                      <span
+                        key={`${entry.id}-${i}`}
+                        data-hour={slot.localHour}
+                        className={[
+                          'timeline-mini-track__cell',
+                          slot.isBusinessHour ? 'is-business-hour' : '',
+                          slot.isCurrentHour ? 'is-current-hour' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                      />
+                    ))}
                   </div>
 
                   <p className="timeline-card__footnote">
@@ -205,48 +277,6 @@ function App() {
             })}
           </div>
         </section>
-
-        <aside
-          className="panel analysis-panel"
-          aria-labelledby="analysis-heading"
-        >
-          <div className="panel-header">
-            <p className="panel-kicker">Analysis</p>
-            <h2 id="analysis-heading">Checkpoint tracker</h2>
-          </div>
-
-          <ol className="checklist">
-            {iterationChecklist.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ol>
-
-          <div className="note-card">
-            <h3>What to test now</h3>
-            <p>
-              Reorder zones with the arrow controls, then toggle targets and
-              verify the sidebar order and timeline rows stay in sync.
-            </p>
-          </div>
-
-          <div className="summary-card">
-            <h3>Seeded scenario</h3>
-            <dl className="summary-list">
-              <div>
-                <dt>Loaded zones</dt>
-                <dd>{selectedZones.length}</dd>
-              </div>
-              <div>
-                <dt>Current targets</dt>
-                <dd>{targetCount}</dd>
-              </div>
-              <div>
-                <dt>Weekday business hours</dt>
-                <dd>09:00-17:00</dd>
-              </div>
-            </dl>
-          </div>
-        </aside>
       </main>
     </div>
   )

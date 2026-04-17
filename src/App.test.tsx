@@ -19,12 +19,60 @@ describe('App shell', () => {
     expect(
       screen.getByRole('heading', { name: /seeded timezone rows/i }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole('heading', { name: /checkpoint tracker/i }),
-    ).toBeInTheDocument()
     expect(screen.getAllByText('New York')).toHaveLength(2)
     expect(screen.getAllByText('London')).toHaveLength(2)
     expect(screen.getAllByText('Tokyo')).toHaveLength(2)
+    expect(screen.getByLabelText('New York local hours')).toBeInTheDocument()
+    expect(screen.getByLabelText('London local hours')).toBeInTheDocument()
+    expect(screen.getByLabelText('Tokyo local hours')).toBeInTheDocument()
+  })
+
+  it('renders business hours from each timezone preset instead of a shared fixed range', () => {
+    const customZones = cloneSeededTimeZones()
+
+    customZones[0].businessHours = {
+      start: '07:00',
+      end: '15:00',
+      weekdaysOnly: true,
+    }
+    customZones[1].businessHours = {
+      start: '12:00',
+      end: '18:00',
+      weekdaysOnly: true,
+    }
+    customZones[2].businessHours = {
+      start: '22:00',
+      end: '06:00',
+      weekdaysOnly: true,
+    }
+
+    useAppStore.setState({ selectedZones: customZones })
+
+    render(<App />)
+
+    const getBusinessHoursForCard = (city: string) => {
+      const card = screen
+        .getByRole('heading', { name: city, level: 3 })
+        .closest('article')
+
+      expect(card).not.toBeNull()
+
+      // Sort values so overnight windows that wrap the track edge don't
+      // produce an order-dependent result.
+      return Array.from(
+        (card as HTMLElement).querySelectorAll(
+          '.timeline-mini-track__cell.is-business-hour',
+        ),
+      )
+        .map((cell) => Number(cell.getAttribute('data-hour')))
+        .sort((a, b) => a - b)
+    }
+
+    expect(getBusinessHoursForCard('New York')).toEqual([
+      7, 8, 9, 10, 11, 12, 13, 14,
+    ])
+    expect(getBusinessHoursForCard('London')).toEqual([12, 13, 14, 15, 16, 17])
+    expect(getBusinessHoursForCard('Tokyo')).toEqual([0, 1, 2, 3, 4, 5, 22, 23])
   })
 
   it('updates the UI when a target zone is toggled', () => {
@@ -40,8 +88,20 @@ describe('App shell', () => {
       }),
     )
 
-    expect(screen.getByText(/2 targets selected/i)).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /targeted/i })).toHaveLength(2)
+
+    const timelinePanel = screen
+      .getByRole('heading', {
+        name: /seeded timezone rows/i,
+      })
+      .closest('section')
+
+    expect(timelinePanel).not.toBeNull()
+    expect(
+      (timelinePanel as HTMLElement).querySelectorAll(
+        '.timeline-card.is-target',
+      ),
+    ).toHaveLength(2)
   })
 
   it('reorders timezone cards and timeline rows from the sidebar controls', () => {
