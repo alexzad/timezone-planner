@@ -289,6 +289,7 @@ function App() {
 
   const [query, setQuery] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [activeSearchIndex, setActiveSearchIndex] = useState(0)
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>(
     'idle',
   )
@@ -318,6 +319,13 @@ function App() {
     }
   }
 
+  const handleAddTimezone = (zone: string, city: string) => {
+    addZone(zone, city)
+    setQuery('')
+    setDropdownOpen(false)
+    setActiveSearchIndex(0)
+  }
+
   const selectedZoneIanaIds = new Set(selectedZones.map((z) => z.zone))
 
   const filteredTimezones =
@@ -329,6 +337,8 @@ function App() {
               tz.zone.toLowerCase().includes(query.toLowerCase())),
         ).slice(0, 8)
       : []
+
+  const activeSearchOption = filteredTimezones[activeSearchIndex] ?? null
 
   // Compute a shared UTC center hour from the first targeted zone so its
   // business hours land in the middle of every timeline card.
@@ -383,10 +393,63 @@ function App() {
               autoComplete="off"
               aria-autocomplete="list"
               aria-controls="tz-search-results"
+              aria-activedescendant={
+                dropdownOpen && activeSearchOption
+                  ? `tz-option-${activeSearchOption.zone}::${activeSearchOption.city}`
+                  : undefined
+              }
               aria-expanded={dropdownOpen && filteredTimezones.length > 0}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value)
+                setDropdownOpen(true)
+                setActiveSearchIndex(0)
+              }}
               onFocus={() => setDropdownOpen(true)}
-              onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
+              onKeyDown={(e) => {
+                if (!filteredTimezones.length) {
+                  if (e.key === 'Escape') {
+                    setDropdownOpen(false)
+                  }
+
+                  return
+                }
+
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault()
+                  setDropdownOpen(true)
+                  setActiveSearchIndex(
+                    (current) => (current + 1) % filteredTimezones.length,
+                  )
+                }
+
+                if (e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  setDropdownOpen(true)
+                  setActiveSearchIndex(
+                    (current) =>
+                      (current - 1 + filteredTimezones.length) %
+                      filteredTimezones.length,
+                  )
+                }
+
+                if (e.key === 'Enter' && activeSearchOption) {
+                  e.preventDefault()
+                  handleAddTimezone(
+                    activeSearchOption.zone,
+                    activeSearchOption.city,
+                  )
+                }
+
+                if (e.key === 'Escape') {
+                  setDropdownOpen(false)
+                }
+              }}
+              onBlur={() =>
+                setTimeout(() => {
+                  setDropdownOpen(false)
+                  setActiveSearchIndex(0)
+                }, 150)
+              }
             />
             {dropdownOpen && filteredTimezones.length > 0 && (
               <ul
@@ -395,17 +458,19 @@ function App() {
                 role="listbox"
                 aria-label="Matching timezones"
               >
-                {filteredTimezones.map((tz) => (
+                {filteredTimezones.map((tz, index) => (
                   <li
+                    id={`tz-option-${tz.zone}::${tz.city}`}
                     key={`${tz.zone}::${tz.city}`}
                     role="option"
-                    aria-selected={false}
-                    className="search-option"
-                    onMouseDown={() => {
-                      addZone(tz.zone, tz.city)
-                      setQuery('')
-                      setDropdownOpen(false)
-                    }}
+                    aria-selected={index === activeSearchIndex}
+                    className={
+                      index === activeSearchIndex
+                        ? 'search-option is-active'
+                        : 'search-option'
+                    }
+                    onMouseEnter={() => setActiveSearchIndex(index)}
+                    onMouseDown={() => handleAddTimezone(tz.zone, tz.city)}
                   >
                     <span className="search-option__city">{tz.city}</span>
                     <span className="search-option__zone">{tz.zone}</span>
@@ -478,22 +543,29 @@ function App() {
             <h2 id="timeline-heading">Timezone comparison</h2>
           </div>
 
-          {allZoneOverlapIntervals.length > 0 && (
-            <div
-              className="overlap-legend"
-              aria-labelledby="overlap-legend-title"
-            >
-              <p id="overlap-legend-title" className="overlap-legend__title">
-                Shared overlap window
-              </p>
-              <dl className="overlap-legend__items">
-                <dt className="overlap-legend__indicator overlap-legend__indicator--overlap" />
-                <dd className="overlap-legend__desc">
-                  All selected zones have business hours in this slot
-                </dd>
-              </dl>
-            </div>
-          )}
+          <div className="timeline-legend" aria-label="Timeline meaning">
+            <p className="timeline-legend__title">Reading the timeline</p>
+            <ul className="timeline-legend__items">
+              <li>
+                <span className="timeline-legend__marker timeline-legend__marker--business" />
+                Business hours
+              </li>
+              <li>
+                <span className="timeline-legend__marker timeline-legend__marker--current" />
+                Current local hour
+              </li>
+              {allZoneOverlapIntervals.length > 0 && (
+                <li>
+                  <span className="timeline-legend__marker timeline-legend__marker--overlap" />
+                  Shared overlap across all zones
+                </li>
+              )}
+              <li>
+                <span className="timeline-legend__marker timeline-legend__marker--target" />
+                Target zone card
+              </li>
+            </ul>
+          </div>
 
           <div className="timeline-stack">
             {selectedZones.map((entry) => {
@@ -537,6 +609,9 @@ function App() {
                     <div>
                       <h3>{entry.city}</h3>
                       <p>{entry.zone}</p>
+                      <p className="timeline-card__status">
+                        {entry.isTarget ? 'Target zone' : 'Comparison zone'}
+                      </p>
                     </div>
 
                     <div className="timeline-badges">
@@ -549,38 +624,40 @@ function App() {
                     </div>
                   </div>
 
-                  <div
-                    className="timeline-card__ruler"
-                    aria-label={`${entry.city} local hours`}
-                  >
-                    {slots.map((slot, i) => (
-                      <span key={`${entry.id}-label-${i}`}>
-                        {slot.localHour.toString().padStart(2, '0')}
-                      </span>
-                    ))}
-                  </div>
+                  <div className="timeline-card__scroll">
+                    <div
+                      className="timeline-card__ruler"
+                      aria-label={`${entry.city} local hours`}
+                    >
+                      {slots.map((slot, i) => (
+                        <span key={`${entry.id}-label-${i}`}>
+                          {slot.localHour.toString().padStart(2, '0')}
+                        </span>
+                      ))}
+                    </div>
 
-                  <div className="timeline-mini-track" aria-hidden="true">
-                    {slots.map((slot, i) => (
-                      <span
-                        key={`${entry.id}-${i}`}
-                        data-hour={slot.localHour}
-                        className={[
-                          'timeline-mini-track__cell',
-                          slot.isBusinessHour ? 'is-business-hour' : '',
-                          slot.isCurrentHour ? 'is-current-hour' : '',
-                          slot.isAllZoneOverlap ? 'is-all-zone-overlap' : '',
-                        ]
-                          .filter(Boolean)
-                          .join(' ')}
-                      />
-                    ))}
+                    <div className="timeline-mini-track" aria-hidden="true">
+                      {slots.map((slot, i) => (
+                        <span
+                          key={`${entry.id}-${i}`}
+                          data-hour={slot.localHour}
+                          className={[
+                            'timeline-mini-track__cell',
+                            slot.isBusinessHour ? 'is-business-hour' : '',
+                            slot.isCurrentHour ? 'is-current-hour' : '',
+                            slot.isAllZoneOverlap ? 'is-all-zone-overlap' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                        />
+                      ))}
+                    </div>
                   </div>
 
                   <p className="timeline-card__footnote">
                     {entry.isTarget
-                      ? 'Included in target-focused planning.'
-                      : 'Available for comparison and future overlap analysis.'}
+                      ? 'Target zone: this card anchors planning and timeline centering.'
+                      : 'Comparison zone: included for side-by-side schedule analysis.'}
                   </p>
                 </article>
               )

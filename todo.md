@@ -275,6 +275,13 @@ Checkpoint
 - The layout remains usable on narrow screens.
 - Overlap meaning is understandable without relying on color alone.
 
+Status
+
+- Complete.
+- Search supports keyboard selection with active-option highlighting and `Enter` to add.
+- Timeline cards now include explicit legend and status text so target and overlap states do not rely on color alone.
+- Narrow screens keep the timeline and matrix usable with horizontal scrolling instead of truncating dense data.
+
 ## Iteration 12: Polish and Release Candidate
 
 - Clean up rough UI edges and inconsistent spacing.

@@ -4,7 +4,7 @@ Greenfield React + TypeScript SPA for planning overlap across multiple IANA time
 
 ## Current Status
 
-Iterations 0–8 and 10 are complete. Iteration 9 was cancelled. The app is a fully interactive timezone overlap planning tool.
+Iterations 0–8, 10, and 11 are complete. Iteration 9 was cancelled. The app is a fully interactive timezone overlap planning tool.
 
 - Vite + React + TypeScript scaffold with ESLint, Prettier, and Vitest
 - Zustand state management with 9 actions; seeded with New York, London, Tokyo
@@ -17,9 +17,10 @@ Iterations 0–8 and 10 are complete. Iteration 9 was cancelled. The app is a fu
 - **All-zone overlap visualization**: shared overlap windows shown with blue gradient cells and a legend
 - **Pairwise overlap matrix**: table showing total overlap duration for every zone pair; intensity-colored cells; scrollable for many zones
 - **Persistence and sharing**: selected zones, order, target flags, and business hours restore from local storage, load from share URLs, and can be copied from the sidebar
+- **Accessibility and responsive pass**: keyboard search selection, visible focus states, non-color timeline legend/cues, and scroll-safe narrow-screen timeline cards
 - DST-safe timezone utilities (18 functions): UTC interval math, pairwise/all-zone overlaps, coverage gaps
-- 61 automated tests (35 timezone utilities + 16 store unit + 10 app integration)
-- Responsive layout: sidebar + timeline on desktop; single column on mobile; 12-hour rulers on narrow screens
+- 63 automated tests (35 timezone utilities + 16 store unit + 12 app integration)
+- Responsive layout: sidebar + timeline on desktop; single column on mobile; horizontal scrolling preserved where dense timeline or matrix data needs it
 
 ## Latest Checkpoint
 
@@ -30,9 +31,10 @@ Run the app and explore the full feature set, including persisted and shareable 
 - Remove any zone with ×; the target reassigns automatically.
 - Drag zones to reorder or use the ↑/↓ arrow controls.
 - Toggle target zones to shift the visual center of the timeline to that zone's business hours.
+- Use the keyboard in search: type, then press `Enter` to add the highlighted result or use arrow keys to move through matches.
 - Edit start/end times per zone to see the business-hour highlighting update live.
 - Set overlapping business hours across zones to see the blue all-zone overlap indicator appear on the timeline.
-- The legend below the heading explains the overlap highlight when visible.
+- The legends above the timeline explain business hours, current hour, target zones, and all-zone overlap without relying on color alone.
 - Scroll down below the zone timeline cards to see the **pairwise overlap matrix** — a table of total overlap minutes for every zone pair.
 - Reload the page to confirm the current scenario restores automatically.
 - Use **Copy share URL** in the sidebar, open the link in a clean tab, and confirm the same scenario loads from the URL.
@@ -66,7 +68,7 @@ npm run build
 npm run format:check
 ```
 
-Then run `npm run dev` and exercise the reorder, target toggle, reset, reload, and share-link restore flows in the UI.
+Then run `npm run dev` and exercise the reorder, target toggle, keyboard search selection, reset, reload, narrow-screen layout, and share-link restore flows in the UI.
 
 ## Deployment Note
 
@@ -84,7 +86,7 @@ Then run `npm run dev` and exercise the reorder, target toggle, reset, reload, a
 
 ## Next Slice
 
-Iteration 11: responsive and accessible interaction pass.
+Iteration 12: polish and release candidate.
 
 ## Roadmap Docs
 

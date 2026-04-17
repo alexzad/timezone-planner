@@ -164,6 +164,22 @@ describe('App shell', () => {
     expect(screen.getAllByText('Paris')).not.toHaveLength(0)
   })
 
+  it('supports keyboard selection in timezone search', () => {
+    render(<App />)
+
+    const input = screen.getByRole('textbox', {
+      name: /search and add timezone/i,
+    })
+
+    fireEvent.focus(input)
+    fireEvent.change(input, { target: { value: 'Paris' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    expect(useAppStore.getState().selectedZones.map((z) => z.city)).toContain(
+      'Paris',
+    )
+  })
+
   it('removes a timezone from the selected list via the remove button', () => {
     render(<App />)
 
@@ -188,30 +204,21 @@ describe('App shell', () => {
     expect(screen.getAllByText('08:00-17:00')[0]).toBeInTheDocument()
   })
 
-  it('displays overlap legend when zones have shared overlap windows', () => {
+  it('does not render a separate shared overlap panel when zones overlap', () => {
     const customZones = cloneSeededTimeZones()
-    // Configure overlapping business hours:
-    // Singapore (UTC+8): 09:00-17:00 = 01:00-09:00 UTC
-    // London (UTC+0): 02:00-16:00 = 02:00-16:00 UTC
-    // Overlap should be: 02:00-09:00 UTC
 
-    // For this test, let's use simpler non-default zones with known overlaps
-    // New York (UTC-5): 14:00-22:00 = 19:00-03:00 UTC
-    // London (UTC+0): 14:00-22:00 = 14:00-22:00 UTC
-    // Overlap: 19:00-22:00 UTC
     customZones[0].businessHours = {
       start: '14:00',
-      end: '22:00',
+      end: '18:00',
       weekdaysOnly: true,
     }
     customZones[1].businessHours = {
-      start: '14:00',
-      end: '22:00',
+      start: '19:00',
+      end: '23:00',
       weekdaysOnly: true,
     }
-    // Tokyo should not be selected for simplicity, or set to a non-overlapping time
     customZones[2].businessHours = {
-      start: '23:00',
+      start: '03:00',
       end: '07:00',
       weekdaysOnly: true,
     }
@@ -219,26 +226,49 @@ describe('App shell', () => {
     useAppStore.setState({ selectedZones: customZones })
     render(<App />)
 
-    // Verify overlap legend appears
-    const legendTitle = screen.queryByText(/shared overlap window/i)
-    if (legendTitle) {
-      expect(legendTitle).toBeInTheDocument()
-      expect(
-        screen.getByText(
-          /all selected zones have business hours in this slot/i,
-        ),
-      ).toBeInTheDocument()
-    } else {
-      // If no overlap legend, verify the overlap computation structure exists
-      // This is an alternative verification if our business hours don't overlap
-      const timelinePanel = screen
-        .getByRole('heading', {
-          name: /timezone comparison/i,
-        })
-        .closest('section')
+    expect(screen.queryByText(/shared overlap window/i)).not.toBeInTheDocument()
+    expect(
+      screen.getByText(/shared overlap across all zones/i),
+    ).toBeInTheDocument()
+  })
 
-      expect(timelinePanel).toBeInTheDocument()
+  it('renders explicit timeline meaning cues beyond color alone', () => {
+    render(<App />)
+
+    expect(screen.getByText(/reading the timeline/i)).toBeInTheDocument()
+    expect(screen.getByText(/business hours/i)).toBeInTheDocument()
+    expect(screen.getByText(/current local hour/i)).toBeInTheDocument()
+    expect(
+      screen.queryByText(/shared overlap across all zones/i),
+    ).not.toBeInTheDocument()
+    expect(screen.getByText(/target zone card/i)).toBeInTheDocument()
+  })
+
+  it('adds overlap meaning to the timeline legend only when all-zone overlap exists', () => {
+    const customZones = cloneSeededTimeZones()
+
+    customZones[0].businessHours = {
+      start: '14:00',
+      end: '18:00',
+      weekdaysOnly: true,
     }
+    customZones[1].businessHours = {
+      start: '19:00',
+      end: '23:00',
+      weekdaysOnly: true,
+    }
+    customZones[2].businessHours = {
+      start: '03:00',
+      end: '07:00',
+      weekdaysOnly: true,
+    }
+
+    useAppStore.setState({ selectedZones: customZones })
+    render(<App />)
+
+    expect(
+      screen.getByText(/shared overlap across all zones/i),
+    ).toBeInTheDocument()
   })
 
   it('renders pairwise overlap matrix for all zone pairs', () => {
