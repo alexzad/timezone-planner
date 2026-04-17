@@ -87,8 +87,12 @@ test.describe('time zone overlap workspace', () => {
     await page.goto('/')
 
     // The document should not overflow horizontally
-    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
-    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+    const scrollWidth = await page.evaluate(
+      () => document.documentElement.scrollWidth,
+    )
+    const clientWidth = await page.evaluate(
+      () => document.documentElement.clientWidth,
+    )
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth)
 
     // Key UI elements should be visible and fully within the viewport
