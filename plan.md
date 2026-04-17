@@ -16,8 +16,7 @@ Build a greenfield React + TypeScript SPA for comparing multiple IANA time zones
 
 **Relevant files**
 
-- /Users/alexzad/epm/time-zones/package.json - project dependencies and scripts for the SPA scaffold.
-- /Users/alexzad/epm/time-zones/src/app - app shell, routing or top-level composition, and persistence bootstrapping.
+- /Users/alexzad/epm/time-zones/package.json - project dependencies and scripts for the SPA scaffold.- /Users/alexzad/epm/time-zones/src/data/timezones.ts — curated IANA timezone list with city labels used for search and add flows.- /Users/alexzad/epm/time-zones/src/app - app shell, routing or top-level composition, and persistence bootstrapping.
 - /Users/alexzad/epm/time-zones/src/features/timezones - timezone search, selected list, ordering, and target selection.
 - /Users/alexzad/epm/time-zones/src/features/business-hours - recurring weekly business-hours editor and defaults.
 - /Users/alexzad/epm/time-zones/src/features/visualization - timeline/grid rendering and overlap overlays.

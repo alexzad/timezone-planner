@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { DateTime } from 'luxon'
 import './App.css'
 import { useAppStore } from './state/appStore'
+import { ALL_TIMEZONES } from './data/timezones'
 
 const HOURS_IN_DAY = 24
 
@@ -70,11 +72,28 @@ const computeUtcCenterHour = (
 function App() {
   const {
     selectedZones,
+    addZone,
+    removeZone,
     moveZoneEarlier,
     moveZoneLater,
     toggleTarget,
     resetTargets,
   } = useAppStore()
+
+  const [query, setQuery] = useState('')
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  const selectedZoneIanaIds = new Set(selectedZones.map((z) => z.zone))
+
+  const filteredTimezones =
+    query.length >= 1
+      ? ALL_TIMEZONES.filter(
+          (tz) =>
+            !selectedZoneIanaIds.has(tz.zone) &&
+            (tz.city.toLowerCase().includes(query.toLowerCase()) ||
+              tz.zone.toLowerCase().includes(query.toLowerCase())),
+        ).slice(0, 8)
+      : []
 
   // Compute a shared UTC center hour from the first targeted zone so its
   // business hours land in the middle of every timeline card.
@@ -106,9 +125,49 @@ function App() {
             <h2 id="zones-heading">Timezone selection</h2>
           </div>
 
-          <div className="search-placeholder">
-            Search and add come next. This slice adds ordering controls so you
-            can test state-backed row movement before drag and drop lands.
+          <div className="timezone-search">
+            <label htmlFor="tz-search" className="visually-hidden">
+              Search and add timezone
+            </label>
+            <input
+              id="tz-search"
+              type="text"
+              className="search-input"
+              placeholder="Search and add timezone…"
+              value={query}
+              autoComplete="off"
+              aria-autocomplete="list"
+              aria-controls="tz-search-results"
+              aria-expanded={dropdownOpen && filteredTimezones.length > 0}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => setDropdownOpen(true)}
+              onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
+            />
+            {dropdownOpen && filteredTimezones.length > 0 && (
+              <ul
+                id="tz-search-results"
+                className="search-dropdown"
+                role="listbox"
+                aria-label="Matching timezones"
+              >
+                {filteredTimezones.map((tz) => (
+                  <li
+                    key={tz.zone}
+                    role="option"
+                    aria-selected={false}
+                    className="search-option"
+                    onMouseDown={() => {
+                      addZone(tz.zone, tz.city)
+                      setQuery('')
+                      setDropdownOpen(false)
+                    }}
+                  >
+                    <span className="search-option__city">{tz.city}</span>
+                    <span className="search-option__zone">{tz.zone}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <ul className="zone-list">
@@ -132,6 +191,15 @@ function App() {
                     className="zone-actions"
                     aria-label={`${entry.city} actions`}
                   >
+                    <button
+                      type="button"
+                      className="remove-button"
+                      onClick={() => removeZone(entry.id)}
+                      aria-label={`Remove ${entry.city}`}
+                    >
+                      ×
+                    </button>
+
                     <div
                       className="reorder-controls"
                       aria-label={`${entry.city} ordering`}
@@ -188,7 +256,7 @@ function App() {
         >
           <div className="panel-header">
             <p className="panel-kicker">Main view</p>
-            <h2 id="timeline-heading">Seeded timezone rows</h2>
+            <h2 id="timeline-heading">Timezone comparison</h2>
           </div>
 
           <div className="timeline-stack">

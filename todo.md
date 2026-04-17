@@ -54,6 +54,13 @@ Checkpoint
 - Duplicate adds are blocked.
 - Removing a timezone updates the list immediately.
 
+Status
+
+- Complete.
+- 81 curated IANA timezones in src/data/timezones.ts, searchable by city name or zone id.
+- addZone and removeZone actions in the store backed by 17 passing tests.
+- If the removed zone was the only target, the first remaining zone becomes the new target automatically.
+
 ## Iteration 3: Ordering and Target Selection
 
 - Add reordering controls for selected timezones.
@@ -76,6 +83,7 @@ Status
 - Complete: UTC-anchored timeline — target zone's business hours centered, all rows shifted by real timezone offset.
 - Complete: per-card local hour rulers that show each zone's actual local time rather than a shared 0–23 scale.
 - Complete: business-hour highlighting derived from each zone's configured window including overnight spans.
+- Complete (landed with iteration 2): timezone search, add, and remove flows are available in the sidebar.
 - Next: drag-and-drop ordering to complement the keyboard controls.
 
 ## Iteration 4: Business Hours Model

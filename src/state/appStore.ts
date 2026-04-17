@@ -1,5 +1,18 @@
 import { create } from 'zustand'
 
+const ZONE_COLORS = [
+  '#ef9a9a',
+  '#f48fb1',
+  '#ce93d8',
+  '#9fa8da',
+  '#80cbc4',
+  '#fff176',
+  '#ffcc80',
+  '#ffab91',
+  '#bcaaa4',
+  '#b0bec5',
+]
+
 export type BusinessHoursPreset = {
   start: string
   end: string
@@ -17,6 +30,8 @@ export type SelectedTimeZone = {
 
 export type AppState = {
   selectedZones: SelectedTimeZone[]
+  addZone: (zone: string, city: string) => void
+  removeZone: (zoneId: string) => void
   moveZoneEarlier: (zoneId: string) => void
   moveZoneLater: (zoneId: string) => void
   toggleTarget: (zoneId: string) => void
@@ -77,6 +92,43 @@ export const cloneSeededTimeZones = (): SelectedTimeZone[] =>
 
 export const useAppStore = create<AppState>()((set) => ({
   selectedZones: cloneSeededTimeZones(),
+  addZone: (zone, city) => {
+    set((state) => {
+      if (state.selectedZones.some((z) => z.zone === zone)) {
+        return state
+      }
+
+      const id = zone.replace(/[/_]/g, '-').toLowerCase()
+      const color = ZONE_COLORS[state.selectedZones.length % ZONE_COLORS.length]
+
+      return {
+        selectedZones: [
+          ...state.selectedZones,
+          {
+            id,
+            city,
+            zone,
+            color,
+            isTarget: false,
+            businessHours: { start: '09:00', end: '17:00', weekdaysOnly: true },
+          },
+        ],
+      }
+    })
+  },
+  removeZone: (zoneId) => {
+    set((state) => {
+      const remaining = state.selectedZones.filter((z) => z.id !== zoneId)
+      const hasTarget = remaining.some((z) => z.isTarget)
+
+      return {
+        selectedZones:
+          hasTarget || remaining.length === 0
+            ? remaining
+            : remaining.map((z, i) => ({ ...z, isTarget: i === 0 })),
+      }
+    })
+  },
   moveZoneEarlier: (zoneId) => {
     set((state) => {
       const currentIndex = state.selectedZones.findIndex(

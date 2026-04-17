@@ -16,17 +16,18 @@ Iteration 3 is partially in place.
 - Per-card hour rulers showing each timezone's local time of day
 - UTC-anchored timeline: target zone's business hours centered; all other zones shifted by real offset
 - Business-hour highlighting derived from each zone's configured window, including overnight spans
+- Timezone search box (81 IANA zones) with live dropdown, duplicate prevention, and remove controls
 
 ## Latest Checkpoint
 
 Test the timezone comparison view in the browser.
 
-- Reorder seeded zones with the arrow controls in the sidebar.
-- Verify the timeline rows follow the same order immediately.
+- Type in the search box to find and add new timezones from the dropdown.
+- Duplicate adds are silently blocked.
+- Remove any zone with the × button; the target is reassigned automatically if needed.
+- Reorder zones with the arrow controls and verify the timeline rows update immediately.
 - Toggle target zones and confirm that zone's business hours move to the visual center.
 - Each row's hour ruler shows its own local times — London is shifted ~5 h right of New York, Tokyo ~13 h.
-- Business-hour cells reflect each zone's configured start/end, including overnight windows.
-- Reset targets and confirm the first zone becomes the only target again.
 
 ## Commands
 

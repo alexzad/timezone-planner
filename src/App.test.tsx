@@ -7,7 +7,7 @@ describe('App shell', () => {
     useAppStore.setState({ selectedZones: cloneSeededTimeZones() })
   })
 
-  it('renders the iteration 1 workspace regions and seeded timezone state', () => {
+  it('renders workspace regions and seeded timezone state', () => {
     render(<App />)
 
     expect(
@@ -17,7 +17,7 @@ describe('App shell', () => {
       screen.getByRole('heading', { name: /timezone selection/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { name: /seeded timezone rows/i }),
+      screen.getByRole('heading', { name: /timezone comparison/i }),
     ).toBeInTheDocument()
     expect(screen.getAllByText('New York')).toHaveLength(2)
     expect(screen.getAllByText('London')).toHaveLength(2)
@@ -92,7 +92,7 @@ describe('App shell', () => {
 
     const timelinePanel = screen
       .getByRole('heading', {
-        name: /seeded timezone rows/i,
+        name: /timezone comparison/i,
       })
       .closest('section')
 
@@ -125,7 +125,7 @@ describe('App shell', () => {
 
     const timelinePanel = screen
       .getByRole('heading', {
-        name: /seeded timezone rows/i,
+        name: /timezone comparison/i,
       })
       .closest('section')
 
@@ -136,5 +136,34 @@ describe('App shell', () => {
       .map((heading) => heading.textContent)
 
     expect(timelineHeadings).toEqual(['New York', 'Tokyo', 'London'])
+  })
+
+  it('adds a timezone via search and updates the sidebar and timeline', () => {
+    render(<App />)
+
+    const input = screen.getByRole('textbox', {
+      name: /search and add timezone/i,
+    })
+
+    fireEvent.focus(input)
+    fireEvent.change(input, { target: { value: 'Paris' } })
+
+    const option = screen.getByRole('option', { name: /paris/i })
+    fireEvent.mouseDown(option)
+
+    expect(useAppStore.getState().selectedZones).toHaveLength(4)
+    expect(useAppStore.getState().selectedZones.map((z) => z.city)).toContain(
+      'Paris',
+    )
+    expect(screen.getAllByText('Paris')).not.toHaveLength(0)
+  })
+
+  it('removes a timezone from the selected list via the remove button', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: /remove london/i }))
+
+    expect(useAppStore.getState().selectedZones).toHaveLength(2)
+    expect(screen.queryByText('Europe/London')).not.toBeInTheDocument()
   })
 })

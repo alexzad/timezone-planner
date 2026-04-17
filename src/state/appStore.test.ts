@@ -84,4 +84,49 @@ describe('app store', () => {
       useAppStore.getState().selectedZones.map((entry) => entry.id),
     ).toEqual(['new-york', 'london', 'tokyo'])
   })
+
+  it('adds a new timezone to the selected list', () => {
+    act(() => {
+      useAppStore.getState().addZone('Europe/Paris', 'Paris')
+    })
+
+    const { selectedZones } = useAppStore.getState()
+
+    expect(selectedZones).toHaveLength(4)
+    expect(selectedZones.at(-1)).toMatchObject({
+      zone: 'Europe/Paris',
+      city: 'Paris',
+      isTarget: false,
+      businessHours: { start: '09:00', end: '17:00' },
+    })
+  })
+
+  it('blocks adding a timezone already in the selected list', () => {
+    act(() => {
+      useAppStore.getState().addZone('America/New_York', 'New York')
+    })
+
+    expect(useAppStore.getState().selectedZones).toHaveLength(3)
+  })
+
+  it('removes a timezone from the selected list', () => {
+    act(() => {
+      useAppStore.getState().removeZone('london')
+    })
+
+    const cities = useAppStore.getState().selectedZones.map((z) => z.city)
+
+    expect(cities).toEqual(['New York', 'Tokyo'])
+  })
+
+  it('reassigns the target when the targeted zone is removed', () => {
+    act(() => {
+      useAppStore.getState().removeZone('new-york')
+    })
+
+    const { selectedZones } = useAppStore.getState()
+
+    expect(selectedZones.filter((z) => z.isTarget)).toHaveLength(1)
+    expect(selectedZones[0].isTarget).toBe(true)
+  })
 })
