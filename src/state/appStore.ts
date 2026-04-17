@@ -17,8 +17,29 @@ export type SelectedTimeZone = {
 
 export type AppState = {
   selectedZones: SelectedTimeZone[]
+  moveZoneEarlier: (zoneId: string) => void
+  moveZoneLater: (zoneId: string) => void
   toggleTarget: (zoneId: string) => void
   resetTargets: () => void
+}
+
+const moveItem = <T>(items: T[], fromIndex: number, toIndex: number): T[] => {
+  if (
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= items.length ||
+    toIndex >= items.length ||
+    fromIndex === toIndex
+  ) {
+    return items
+  }
+
+  const nextItems = [...items]
+  const [movedItem] = nextItems.splice(fromIndex, 1)
+
+  nextItems.splice(toIndex, 0, movedItem)
+
+  return nextItems
 }
 
 export const seededTimeZones: SelectedTimeZone[] = [
@@ -56,6 +77,36 @@ export const cloneSeededTimeZones = (): SelectedTimeZone[] =>
 
 export const useAppStore = create<AppState>()((set) => ({
   selectedZones: cloneSeededTimeZones(),
+  moveZoneEarlier: (zoneId) => {
+    set((state) => {
+      const currentIndex = state.selectedZones.findIndex(
+        (entry) => entry.id === zoneId,
+      )
+
+      return {
+        selectedZones: moveItem(
+          state.selectedZones,
+          currentIndex,
+          currentIndex - 1,
+        ),
+      }
+    })
+  },
+  moveZoneLater: (zoneId) => {
+    set((state) => {
+      const currentIndex = state.selectedZones.findIndex(
+        (entry) => entry.id === zoneId,
+      )
+
+      return {
+        selectedZones: moveItem(
+          state.selectedZones,
+          currentIndex,
+          currentIndex + 1,
+        ),
+      }
+    })
+  },
   toggleTarget: (zoneId) => {
     set((state) => ({
       selectedZones: state.selectedZones.map((entry) =>

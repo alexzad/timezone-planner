@@ -43,4 +43,38 @@ describe('App shell', () => {
     expect(screen.getByText(/2 targets selected/i)).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /targeted/i })).toHaveLength(2)
   })
+
+  it('reorders timezone cards and timeline rows from the sidebar controls', () => {
+    render(<App />)
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /move tokyo earlier/i,
+      }),
+    )
+
+    expect(
+      useAppStore.getState().selectedZones.map((entry) => entry.id),
+    ).toEqual(['new-york', 'tokyo', 'london'])
+
+    const timezoneCards = screen.getAllByRole('listitem')
+
+    expect(
+      within(timezoneCards[1] as HTMLElement).getByText('Tokyo'),
+    ).toBeInTheDocument()
+
+    const timelinePanel = screen
+      .getByRole('heading', {
+        name: /seeded timezone rows/i,
+      })
+      .closest('section')
+
+    expect(timelinePanel).not.toBeNull()
+
+    const timelineHeadings = within(timelinePanel as HTMLElement)
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent)
+
+    expect(timelineHeadings).toEqual(['New York', 'Tokyo', 'London'])
+  })
 })

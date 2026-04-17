@@ -7,11 +7,18 @@ const iterationChecklist = [
   'Core app state is defined',
   'Seeded timezone scenario is loaded',
   'Timezone list is rendered from state',
+  'Keyboard reorder controls update state immediately',
 ]
 
 function App() {
   const updatedAt = DateTime.now().toFormat('ccc, dd LLL yyyy HH:mm')
-  const { selectedZones, toggleTarget, resetTargets } = useAppStore()
+  const {
+    selectedZones,
+    moveZoneEarlier,
+    moveZoneLater,
+    toggleTarget,
+    resetTargets,
+  } = useAppStore()
   const targetCount = selectedZones.filter((entry) => entry.isTarget).length
 
   return (
@@ -50,13 +57,15 @@ function App() {
           </div>
 
           <div className="search-placeholder">
-            Search and add come next. For now, this seeded scenario is driven by
-            the real app store.
+            Search and add come next. This slice adds ordering controls so you
+            can test state-backed row movement before drag and drop lands.
           </div>
 
           <ul className="zone-list">
-            {selectedZones.map((entry) => {
+            {selectedZones.map((entry, index) => {
               const localNow = DateTime.now().setZone(entry.zone)
+              const isFirst = index === 0
+              const isLast = index === selectedZones.length - 1
 
               return (
                 <li className="zone-card" key={entry.id}>
@@ -69,17 +78,46 @@ function App() {
                     </small>
                   </span>
 
-                  <button
-                    type="button"
-                    className={
-                      entry.isTarget
-                        ? 'target-button is-active'
-                        : 'target-button'
-                    }
-                    onClick={() => toggleTarget(entry.id)}
+                  <div
+                    className="zone-actions"
+                    aria-label={`${entry.city} actions`}
                   >
-                    {entry.isTarget ? 'Targeted' : 'Make target'}
-                  </button>
+                    <div
+                      className="reorder-controls"
+                      aria-label={`${entry.city} ordering`}
+                    >
+                      <button
+                        type="button"
+                        className="icon-button"
+                        onClick={() => moveZoneEarlier(entry.id)}
+                        disabled={isFirst}
+                        aria-label={`Move ${entry.city} earlier`}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        className="icon-button"
+                        onClick={() => moveZoneLater(entry.id)}
+                        disabled={isLast}
+                        aria-label={`Move ${entry.city} later`}
+                      >
+                        ↓
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={
+                        entry.isTarget
+                          ? 'target-button is-active'
+                          : 'target-button'
+                      }
+                      onClick={() => toggleTarget(entry.id)}
+                    >
+                      {entry.isTarget ? 'Targeted' : 'Make target'}
+                    </button>
+                  </div>
                 </li>
               )
             })}
@@ -186,8 +224,8 @@ function App() {
           <div className="note-card">
             <h3>What to test now</h3>
             <p>
-              Toggle target zones in the sidebar and verify that the target
-              count, button state, and highlighted rows update immediately.
+              Reorder zones with the arrow controls, then toggle targets and
+              verify the sidebar order and timeline rows stay in sync.
             </p>
           </div>
 

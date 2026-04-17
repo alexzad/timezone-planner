@@ -147,8 +147,30 @@
   padding: 8px 12px;
 }
 
+.zone-actions {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.reorder-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-button {
+  min-width: 40px;
+  font-weight: 700;
+}
+
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .target-button.is-active,
-.secondary-button:hover {
+.secondary-button:hover,
+.icon-button:hover:not(:disabled) {
   color: var(--heading-color);
   border-color: rgba(255, 196, 0, 0.45);
   background: rgba(255, 196, 0, 0.12);
@@ -348,5 +370,19 @@
 
   .timeline-badges {
     justify-content: flex-start;
+  }
+
+  .zone-card {
+    flex-direction: column;
+  }
+
+  .zone-actions {
+    width: 100%;
+    justify-items: stretch;
+  }
+
+  .reorder-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

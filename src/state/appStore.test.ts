@@ -44,4 +44,44 @@ describe('app store', () => {
 
     expect(targetIds).toEqual(['new-york'])
   })
+
+  it('moves a timezone earlier in the ordered list', () => {
+    act(() => {
+      useAppStore.getState().moveZoneEarlier('tokyo')
+    })
+
+    expect(
+      useAppStore.getState().selectedZones.map((entry) => entry.id),
+    ).toEqual(['new-york', 'tokyo', 'london'])
+  })
+
+  it('does not move the first timezone earlier', () => {
+    act(() => {
+      useAppStore.getState().moveZoneEarlier('new-york')
+    })
+
+    expect(
+      useAppStore.getState().selectedZones.map((entry) => entry.id),
+    ).toEqual(['new-york', 'london', 'tokyo'])
+  })
+
+  it('moves a timezone later in the ordered list', () => {
+    act(() => {
+      useAppStore.getState().moveZoneLater('london')
+    })
+
+    expect(
+      useAppStore.getState().selectedZones.map((entry) => entry.id),
+    ).toEqual(['new-york', 'tokyo', 'london'])
+  })
+
+  it('does not move the last timezone later', () => {
+    act(() => {
+      useAppStore.getState().moveZoneLater('tokyo')
+    })
+
+    expect(
+      useAppStore.getState().selectedZones.map((entry) => entry.id),
+    ).toEqual(['new-york', 'london', 'tokyo'])
+  })
 })

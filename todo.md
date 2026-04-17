@@ -36,6 +36,10 @@ Checkpoint
 - Reloading the page keeps the app stable.
 - Tests cover the basic state transitions.
 
+Status
+
+- Complete.
+
 ## Iteration 2: Timezone Search and Add Flow
 
 - Add timezone search over the full IANA timezone list.
@@ -63,6 +67,14 @@ Checkpoint
 - You can reorder zones and the order persists in app state.
 - One or more zones can be marked as target.
 - Target zones are visually obvious.
+
+Status
+
+- In progress.
+- Complete: keyboard move earlier or later controls backed by app state.
+- Complete: target-zone toggles with visual distinction in sidebar and timeline.
+- Verified: seeded reorder flow updates the sidebar list and timeline rows together.
+- Next: drag-and-drop ordering to complement the keyboard controls.
 
 ## Iteration 4: Business Hours Model
 
@@ -206,6 +218,7 @@ Checkpoint
 
 - Confirm the app structure and interaction model before deeper time logic work.
 - Verify the selected-zone workflow feels efficient enough to keep.
+- Current result: ready for that review with seeded ordering and target-selection behavior in place.
 
 ### Gate B: After Iteration 7
 
