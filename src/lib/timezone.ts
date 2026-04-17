@@ -163,13 +163,17 @@ function computeIntervalsForLocalDay(
   if (startMin === endMin) {
     const utcStart = convertLocalToUtc(tzName, localDayStart)
     const utcEnd = convertLocalToUtc(tzName, localDayStart.plus({ days: 1 }))
-    return [{ start: utcStart.toMillis() / 60000, end: utcEnd.toMillis() / 60000 }]
+    return [
+      { start: utcStart.toMillis() / 60000, end: utcEnd.toMillis() / 60000 },
+    ]
   }
 
   if (startMin < endMin) {
     const utcStart = convertLocalToUtc(tzName, windowStart)
     const utcEnd = convertLocalToUtc(tzName, windowEnd)
-    return [{ start: utcStart.toMillis() / 60000, end: utcEnd.toMillis() / 60000 }]
+    return [
+      { start: utcStart.toMillis() / 60000, end: utcEnd.toMillis() / 60000 },
+    ]
   }
 
   // Midnight-crossing
@@ -209,7 +213,12 @@ function getBusinessHoursInWindow(
   // Scan from 1 day before to 2 days after to capture all edges
   for (let dayOffset = -1; dayOffset <= 2; dayOffset++) {
     const localDayStart = localBase.plus({ days: dayOffset })
-    const intervals = computeIntervalsForLocalDay(tzName, startMin, endMin, localDayStart)
+    const intervals = computeIntervalsForLocalDay(
+      tzName,
+      startMin,
+      endMin,
+      localDayStart,
+    )
     for (const interval of intervals) {
       const clippedStart = Math.max(interval.start, windowStartMs)
       const clippedEnd = Math.min(interval.end, windowEndMs)
@@ -289,8 +298,20 @@ export function computePairwiseOverlapDuration(
   const windowStartMs = utcDay.toMillis() / 60000
   const windowEndMs = utcDay.plus({ days: 1 }).toMillis() / 60000
 
-  const intervalsA = getBusinessHoursInWindow(tzA, startA, endA, windowStartMs, windowEndMs)
-  const intervalsB = getBusinessHoursInWindow(tzB, startB, endB, windowStartMs, windowEndMs)
+  const intervalsA = getBusinessHoursInWindow(
+    tzA,
+    startA,
+    endA,
+    windowStartMs,
+    windowEndMs,
+  )
+  const intervalsB = getBusinessHoursInWindow(
+    tzB,
+    startB,
+    endB,
+    windowStartMs,
+    windowEndMs,
+  )
 
   let totalOverlap = 0
   for (const ia of intervalsA) {
