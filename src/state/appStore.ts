@@ -32,6 +32,8 @@ export type AppState = {
   selectedZones: SelectedTimeZone[]
   addZone: (zone: string, city: string) => void
   removeZone: (zoneId: string) => void
+  reorderZones: (activeId: string, overId: string) => void
+  setBusinessHours: (zoneId: string, start: string, end: string) => void
   moveZoneEarlier: (zoneId: string) => void
   moveZoneLater: (zoneId: string) => void
   toggleTarget: (zoneId: string) => void
@@ -128,6 +130,23 @@ export const useAppStore = create<AppState>()((set) => ({
             : remaining.map((z, i) => ({ ...z, isTarget: i === 0 })),
       }
     })
+  },
+  reorderZones: (activeId, overId) => {
+    set((state) => {
+      const from = state.selectedZones.findIndex((z) => z.id === activeId)
+      const to = state.selectedZones.findIndex((z) => z.id === overId)
+
+      return { selectedZones: moveItem(state.selectedZones, from, to) }
+    })
+  },
+  setBusinessHours: (zoneId, start, end) => {
+    set((state) => ({
+      selectedZones: state.selectedZones.map((z) =>
+        z.id === zoneId
+          ? { ...z, businessHours: { ...z.businessHours, start, end } }
+          : z,
+      ),
+    }))
   },
   moveZoneEarlier: (zoneId) => {
     set((state) => {

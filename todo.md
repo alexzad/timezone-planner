@@ -77,14 +77,14 @@ Checkpoint
 
 Status
 
-- In progress.
+- Complete.
 - Complete: keyboard move earlier or later controls backed by app state.
 - Complete: target-zone toggles with visual distinction in sidebar and timeline.
 - Complete: UTC-anchored timeline — target zone's business hours centered, all rows shifted by real timezone offset.
 - Complete: per-card local hour rulers that show each zone's actual local time rather than a shared 0–23 scale.
 - Complete: business-hour highlighting derived from each zone's configured window including overnight spans.
 - Complete (landed with iteration 2): timezone search, add, and remove flows are available in the sidebar.
-- Next: drag-and-drop ordering to complement the keyboard controls.
+- Complete: drag-and-drop ordering (SortableZoneCard with @dnd-kit) with reorderZones store action.
 
 ## Iteration 4: Business Hours Model
 
@@ -99,6 +99,16 @@ Checkpoint
 - Each timezone shows editable business hours.
 - Updating a zone's hours changes the stored state correctly.
 - Midnight-crossing schedules are handled in tests.
+
+Status
+
+- Complete.
+- Complete: editable start/end time inputs on each zone card.
+- Complete: live timeline update when business hours change.
+- Complete: setBusinessHours store action with immutable per-zone updates.
+- Complete: midnight-crossing windows supported and visually highlighted.
+- Complete: store tests pass for reorderZones and setBusinessHours actions.
+- Complete: app integration tests pass for business-hours time input changes.
 
 ## Iteration 5: DST-Safe Timezone Engine
 

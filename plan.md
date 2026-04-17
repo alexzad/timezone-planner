@@ -2,6 +2,20 @@
 
 Build a greenfield React + TypeScript SPA for comparing multiple IANA time zones, visualizing local business hours, and analyzing overlap for 24x7 operations planning. Use a timeline-first UI with complementary overlap summaries. For v1, keep business-hours rules to recurring weekly schedules only, persist state in both local storage and shareable URLs, and compute exact overlap windows with DST-safe timezone handling.
 
+**Current Status**
+
+Iterations 0–4 complete. App features:
+- React + TypeScript SPA with Vite, Zustand state, @dnd-kit drag-and-drop, luxon for timezone math.
+- Seeded with 3 zones (New York, London, Tokyo); searchable 81-timezone IANA database.
+- UTC-anchored timeline with per-zone hour rulers; each zone's local hours derived from UTC offset.
+- Business-hours configuration (start/end times, support for overnight spans) with immediate timeline updates.
+- Drag-and-drop zone reordering plus keyboard controls (arrow keys).
+- Target zone marking to highlight priority zones and anchor the timeline view.
+- Full test coverage (20 tests: 13 store unit + 7 app integration).
+- All validation passing: tests, lint, build, format.
+
+Next: Iteration 5 (DST-safe timezone engine with overlap calculations) and beyond.
+
 **Steps**
 
 1. Phase 1: Foundation. Scaffold a React + TypeScript SPA with a lightweight build tool, define application state shape for ordered selected zones, target zones, per-zone business-hours rules, display settings, and persisted/shareable state, and choose a DST-safe timezone library plus a drag-and-drop library. This phase blocks all later work.

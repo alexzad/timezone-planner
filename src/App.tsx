@@ -1,8 +1,23 @@
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { DateTime } from 'luxon'
 import './App.css'
 import { useAppStore } from './state/appStore'
+import type { SelectedTimeZone } from './state/appStore'
 import { ALL_TIMEZONES } from './data/timezones'
 
 const HOURS_IN_DAY = 24
@@ -69,11 +84,158 @@ const computeUtcCenterHour = (
   return Math.round(utcMidMinutes / 60) % HOURS_IN_DAY
 }
 
+type SortableZoneCardProps = {
+  entry: SelectedTimeZone
+  index: number
+  total: number
+  onMoveEarlier: (id: string) => void
+  onMoveLater: (id: string) => void
+  onRemove: (id: string) => void
+  onToggleTarget: (id: string) => void
+  onSetBusinessHours: (id: string, start: string, end: string) => void
+}
+
+function SortableZoneCard({
+  entry,
+  index,
+  total,
+  onMoveEarlier,
+  onMoveLater,
+  onRemove,
+  onToggleTarget,
+  onSetBusinessHours,
+}: SortableZoneCardProps) {
+  const localNow = DateTime.now().setZone(entry.zone)
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: entry.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  } as CSSProperties
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={isDragging ? 'zone-card is-dragging' : 'zone-card'}
+    >
+      <div className="zone-card__main">
+        <button
+          type="button"
+          className="drag-handle"
+          aria-label={`Drag ${entry.city} to reorder`}
+          {...attributes}
+          {...listeners}
+        >
+          ⠿
+        </button>
+
+        <span>
+          <strong>{entry.city}</strong>
+          <small>{entry.zone}</small>
+          <small>
+            {localNow.toFormat('HH:mm')} local · {localNow.offsetNameShort}
+          </small>
+        </span>
+
+        <div className="zone-actions" aria-label={`${entry.city} actions`}>
+          <button
+            type="button"
+            className="remove-button"
+            onClick={() => onRemove(entry.id)}
+            aria-label={`Remove ${entry.city}`}
+          >
+            ×
+          </button>
+
+          <div
+            className="reorder-controls"
+            aria-label={`${entry.city} ordering`}
+          >
+            <button
+              type="button"
+              className="icon-button"
+              onClick={() => onMoveEarlier(entry.id)}
+              disabled={index === 0}
+              aria-label={`Move ${entry.city} earlier`}
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              className="icon-button"
+              onClick={() => onMoveLater(entry.id)}
+              disabled={index === total - 1}
+              aria-label={`Move ${entry.city} later`}
+            >
+              ↓
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className={
+              entry.isTarget ? 'target-button is-active' : 'target-button'
+            }
+            onClick={() => onToggleTarget(entry.id)}
+          >
+            {entry.isTarget ? 'Targeted' : 'Make target'}
+          </button>
+        </div>
+      </div>
+
+      <div className="biz-hours-row">
+        <label className="biz-hours-label">
+          Start
+          <input
+            type="time"
+            className="time-input"
+            value={entry.businessHours.start}
+            aria-label={`${entry.city} business hours start`}
+            onChange={(e) =>
+              onSetBusinessHours(
+                entry.id,
+                e.target.value,
+                entry.businessHours.end,
+              )
+            }
+          />
+        </label>
+        <label className="biz-hours-label">
+          End
+          <input
+            type="time"
+            className="time-input"
+            value={entry.businessHours.end}
+            aria-label={`${entry.city} business hours end`}
+            onChange={(e) =>
+              onSetBusinessHours(
+                entry.id,
+                entry.businessHours.start,
+                e.target.value,
+              )
+            }
+          />
+        </label>
+      </div>
+    </li>
+  )
+}
+
 function App() {
   const {
     selectedZones,
     addZone,
     removeZone,
+    reorderZones,
+    setBusinessHours,
     moveZoneEarlier,
     moveZoneLater,
     toggleTarget,
@@ -82,6 +244,16 @@ function App() {
 
   const [query, setQuery] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  const sensors = useSensors(useSensor(PointerSensor))
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (over && active.id !== over.id) {
+      reorderZones(String(active.id), String(over.id))
+    }
+  }
 
   const selectedZoneIanaIds = new Set(selectedZones.map((z) => z.zone))
 
@@ -170,76 +342,32 @@ function App() {
             )}
           </div>
 
-          <ul className="zone-list">
-            {selectedZones.map((entry, index) => {
-              const localNow = DateTime.now().setZone(entry.zone)
-              const isFirst = index === 0
-              const isLast = index === selectedZones.length - 1
-
-              return (
-                <li className="zone-card" key={entry.id}>
-                  <span>
-                    <strong>{entry.city}</strong>
-                    <small>{entry.zone}</small>
-                    <small>
-                      {localNow.toFormat('HH:mm')} local ·{' '}
-                      {localNow.offsetNameShort}
-                    </small>
-                  </span>
-
-                  <div
-                    className="zone-actions"
-                    aria-label={`${entry.city} actions`}
-                  >
-                    <button
-                      type="button"
-                      className="remove-button"
-                      onClick={() => removeZone(entry.id)}
-                      aria-label={`Remove ${entry.city}`}
-                    >
-                      ×
-                    </button>
-
-                    <div
-                      className="reorder-controls"
-                      aria-label={`${entry.city} ordering`}
-                    >
-                      <button
-                        type="button"
-                        className="icon-button"
-                        onClick={() => moveZoneEarlier(entry.id)}
-                        disabled={isFirst}
-                        aria-label={`Move ${entry.city} earlier`}
-                      >
-                        ↑
-                      </button>
-                      <button
-                        type="button"
-                        className="icon-button"
-                        onClick={() => moveZoneLater(entry.id)}
-                        disabled={isLast}
-                        aria-label={`Move ${entry.city} later`}
-                      >
-                        ↓
-                      </button>
-                    </div>
-
-                    <button
-                      type="button"
-                      className={
-                        entry.isTarget
-                          ? 'target-button is-active'
-                          : 'target-button'
-                      }
-                      onClick={() => toggleTarget(entry.id)}
-                    >
-                      {entry.isTarget ? 'Targeted' : 'Make target'}
-                    </button>
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={selectedZones.map((z) => z.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="zone-list">
+                {selectedZones.map((entry, index) => (
+                  <SortableZoneCard
+                    key={entry.id}
+                    entry={entry}
+                    index={index}
+                    total={selectedZones.length}
+                    onMoveEarlier={moveZoneEarlier}
+                    onMoveLater={moveZoneLater}
+                    onRemove={removeZone}
+                    onToggleTarget={toggleTarget}
+                    onSetBusinessHours={setBusinessHours}
+                  />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
 
           <button
             type="button"

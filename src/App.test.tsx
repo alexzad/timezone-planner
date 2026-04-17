@@ -166,4 +166,19 @@ describe('App shell', () => {
     expect(useAppStore.getState().selectedZones).toHaveLength(2)
     expect(screen.queryByText('Europe/London')).not.toBeInTheDocument()
   })
+
+  it('updates business hours when a time input changes', () => {
+    render(<App />)
+
+    const startInput = screen.getByLabelText(/new york business hours start/i)
+
+    fireEvent.change(startInput, { target: { value: '08:00' } })
+
+    expect(
+      useAppStore.getState().selectedZones.find((z) => z.id === 'new-york')
+        ?.businessHours.start,
+    ).toBe('08:00')
+
+    expect(screen.getAllByText('08:00-17:00')[0]).toBeInTheDocument()
+  })
 })

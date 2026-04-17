@@ -161,14 +161,22 @@
 }
 
 .zone-card {
+  border-radius: 18px;
+  background: var(--surface-color);
+  border: 1px solid var(--soft-border-color);
+}
+
+.zone-card.is-dragging {
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.zone-card__main {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 18px;
-  background: var(--surface-color);
-  border: 1px solid var(--soft-border-color);
 }
 
 .zone-card span {
@@ -180,7 +188,61 @@
   color: var(--muted-text-color);
 }
 
-.zone-card button {
+.drag-handle {
+  cursor: grab;
+  flex-shrink: 0;
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted-text-color);
+  font-size: 1.1rem;
+  line-height: 1;
+  touch-action: none;
+  align-self: center;
+}
+
+.drag-handle:hover {
+  color: var(--heading-color);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.drag-handle:active,
+.zone-card.is-dragging .drag-handle {
+  cursor: grabbing;
+}
+
+.biz-hours-row {
+  display: flex;
+  gap: 16px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--soft-border-color);
+}
+
+.biz-hours-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  color: var(--muted-text-color);
+}
+
+.time-input {
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--soft-border-color);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--heading-color);
+  font-size: 0.78rem;
+  outline: none;
+  width: 90px;
+}
+
+.time-input:focus {
+  border-color: rgba(255, 196, 0, 0.5);
+}
+
+.zone-actions button {
   border: 1px solid var(--soft-border-color);
   background: transparent;
   color: var(--muted-text-color);
@@ -353,8 +415,8 @@
     grid-template-columns: repeat(12, minmax(10px, 1fr));
   }
 
-  .zone-card {
-    flex-direction: column;
+  .zone-card__main {
+    flex-wrap: wrap;
   }
 
   .zone-actions {

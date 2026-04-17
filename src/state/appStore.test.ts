@@ -129,4 +129,30 @@ describe('app store', () => {
     expect(selectedZones.filter((z) => z.isTarget)).toHaveLength(1)
     expect(selectedZones[0].isTarget).toBe(true)
   })
+
+  it('reorders zones via drag id swap', () => {
+    act(() => {
+      useAppStore.getState().reorderZones('tokyo', 'london')
+    })
+
+    expect(useAppStore.getState().selectedZones.map((z) => z.id)).toEqual([
+      'new-york',
+      'tokyo',
+      'london',
+    ])
+  })
+
+  it('updates business hours for a single timezone without affecting others', () => {
+    act(() => {
+      useAppStore.getState().setBusinessHours('london', '08:00', '16:00')
+    })
+
+    const { selectedZones } = useAppStore.getState()
+    const london = selectedZones.find((z) => z.id === 'london')
+    const newYork = selectedZones.find((z) => z.id === 'new-york')
+
+    expect(london?.businessHours.start).toBe('08:00')
+    expect(london?.businessHours.end).toBe('16:00')
+    expect(newYork?.businessHours.start).toBe('09:00')
+  })
 })
