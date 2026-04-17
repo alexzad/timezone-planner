@@ -13,6 +13,32 @@ const ZONE_COLORS = [
   '#b0bec5',
 ]
 
+export const APP_STATE_VERSION = 1
+export const APP_STATE_STORAGE_KEY = 'timezone-planner/state'
+export const APP_STATE_URL_PARAM = 'tz'
+
+type StorageLike = {
+  getItem: (key: string) => string | null
+  setItem: (key: string, value: string) => void
+  removeItem: (key: string) => void
+  clear: () => void
+}
+
+const memoryStorageData = new Map<string, string>()
+
+const memoryStorage: StorageLike = {
+  getItem: (key) => memoryStorageData.get(key) ?? null,
+  setItem: (key, value) => {
+    memoryStorageData.set(key, value)
+  },
+  removeItem: (key) => {
+    memoryStorageData.delete(key)
+  },
+  clear: () => {
+    memoryStorageData.clear()
+  },
+}
+
 export type BusinessHoursPreset = {
   start: string
   end: string
@@ -28,6 +54,11 @@ export type SelectedTimeZone = {
   businessHours: BusinessHoursPreset
 }
 
+type PersistedAppState = {
+  version: number
+  selectedZones: SelectedTimeZone[]
+}
+
 export type AppState = {
   selectedZones: SelectedTimeZone[]
   addZone: (zone: string, city: string) => void
@@ -39,6 +70,27 @@ export type AppState = {
   toggleTarget: (zoneId: string) => void
   resetTargets: () => void
 }
+
+const deriveZoneId = (zone: string): string =>
+  zone.replace(/[/_]/g, '-').toLowerCase()
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isBusinessHoursPreset = (value: unknown): value is BusinessHoursPreset =>
+  isRecord(value) &&
+  typeof value.start === 'string' &&
+  typeof value.end === 'string' &&
+  typeof value.weekdaysOnly === 'boolean'
+
+const isSelectedTimeZone = (value: unknown): value is SelectedTimeZone =>
+  isRecord(value) &&
+  typeof value.id === 'string' &&
+  typeof value.city === 'string' &&
+  typeof value.zone === 'string' &&
+  typeof value.color === 'string' &&
+  typeof value.isTarget === 'boolean' &&
+  isBusinessHoursPreset(value.businessHours)
 
 const moveItem = <T>(items: T[], fromIndex: number, toIndex: number): T[] => {
   if (
@@ -92,105 +144,252 @@ export const cloneSeededTimeZones = (): SelectedTimeZone[] =>
     businessHours: { ...entry.businessHours },
   }))
 
+const normalizeSelectedZones = (
+  zones: SelectedTimeZone[],
+): SelectedTimeZone[] => {
+  const deduped: SelectedTimeZone[] = []
+  const seenZones = new Set<string>()
+
+  for (const [index, entry] of zones.entries()) {
+    if (seenZones.has(entry.zone)) {
+      continue
+    }
+
+    seenZones.add(entry.zone)
+    deduped.push({
+      ...entry,
+      id: entry.id || deriveZoneId(entry.zone),
+      color: entry.color || ZONE_COLORS[index % ZONE_COLORS.length],
+      businessHours: {
+        ...entry.businessHours,
+        weekdaysOnly: Boolean(entry.businessHours.weekdaysOnly),
+      },
+    })
+  }
+
+  if (deduped.length === 0) {
+    return cloneSeededTimeZones()
+  }
+
+  if (!deduped.some((entry) => entry.isTarget)) {
+    return deduped.map((entry, index) => ({
+      ...entry,
+      isTarget: index === 0,
+    }))
+  }
+
+  return deduped
+}
+
+const getStorage = (): StorageLike => {
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.localStorage?.getItem === 'function' &&
+    typeof window.localStorage?.setItem === 'function'
+  ) {
+    return window.localStorage
+  }
+
+  return memoryStorage
+}
+
+export const serializeAppState = (selectedZones: SelectedTimeZone[]): string =>
+  JSON.stringify({
+    version: APP_STATE_VERSION,
+    selectedZones,
+  } satisfies PersistedAppState)
+
+const parsePersistedAppState = (
+  raw: string | null,
+): SelectedTimeZone[] | null => {
+  if (!raw) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown
+
+    if (!isRecord(parsed) || parsed.version !== APP_STATE_VERSION) {
+      return null
+    }
+
+    if (!Array.isArray(parsed.selectedZones)) {
+      return null
+    }
+
+    const selectedZones = parsed.selectedZones.filter(isSelectedTimeZone)
+
+    if (selectedZones.length !== parsed.selectedZones.length) {
+      return null
+    }
+
+    return normalizeSelectedZones(selectedZones)
+  } catch {
+    return null
+  }
+}
+
+export const readSelectedZonesFromLocalStorage = ():
+  | SelectedTimeZone[]
+  | null => {
+  return parsePersistedAppState(getStorage().getItem(APP_STATE_STORAGE_KEY))
+}
+
+export const readSelectedZonesFromUrl = (
+  search: string = typeof window === 'undefined' ? '' : window.location.search,
+): SelectedTimeZone[] | null => {
+  const params = new URLSearchParams(search)
+  return parsePersistedAppState(params.get(APP_STATE_URL_PARAM))
+}
+
+export const writeSelectedZonesToLocalStorage = (
+  selectedZones: SelectedTimeZone[],
+): void => {
+  getStorage().setItem(APP_STATE_STORAGE_KEY, serializeAppState(selectedZones))
+}
+
+export const writeSelectedZonesToUrl = (
+  selectedZones: SelectedTimeZone[],
+): void => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const url = new URL(window.location.href)
+  url.searchParams.set(APP_STATE_URL_PARAM, serializeAppState(selectedZones))
+  window.history.replaceState({}, '', url)
+}
+
+export const persistSelectedZones = (
+  selectedZones: SelectedTimeZone[],
+): void => {
+  const normalized = normalizeSelectedZones(selectedZones)
+  writeSelectedZonesToLocalStorage(normalized)
+  writeSelectedZonesToUrl(normalized)
+}
+
+export const clearPersistedState = (): void => {
+  getStorage().removeItem(APP_STATE_STORAGE_KEY)
+
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const url = new URL(window.location.href)
+  url.searchParams.delete(APP_STATE_URL_PARAM)
+  window.history.replaceState({}, '', url)
+}
+
+export const resolveSelectedZonesFromPersistence = (): SelectedTimeZone[] => {
+  const fromUrl = readSelectedZonesFromUrl()
+  if (fromUrl) {
+    return fromUrl
+  }
+
+  const fromLocalStorage = readSelectedZonesFromLocalStorage()
+  if (fromLocalStorage) {
+    return fromLocalStorage
+  }
+
+  return cloneSeededTimeZones()
+}
+
+const createZoneEntry = (
+  zone: string,
+  city: string,
+  index: number,
+): SelectedTimeZone => ({
+  id: deriveZoneId(zone),
+  city,
+  zone,
+  color: ZONE_COLORS[index % ZONE_COLORS.length],
+  isTarget: false,
+  businessHours: { start: '09:00', end: '17:00', weekdaysOnly: true },
+})
+
+const updateSelectedZones = (
+  set: (fn: (state: AppState) => Pick<AppState, 'selectedZones'>) => void,
+  updater: (state: AppState) => SelectedTimeZone[],
+) => {
+  set((state) => {
+    const selectedZones = normalizeSelectedZones(updater(state))
+    persistSelectedZones(selectedZones)
+    return { selectedZones }
+  })
+}
+
 export const useAppStore = create<AppState>()((set) => ({
-  selectedZones: cloneSeededTimeZones(),
+  selectedZones: resolveSelectedZonesFromPersistence(),
   addZone: (zone, city) => {
-    set((state) => {
+    updateSelectedZones(set, (state) => {
       if (state.selectedZones.some((z) => z.zone === zone)) {
-        return state
+        return state.selectedZones
       }
 
-      const id = zone.replace(/[/_]/g, '-').toLowerCase()
-      const color = ZONE_COLORS[state.selectedZones.length % ZONE_COLORS.length]
-
-      return {
-        selectedZones: [
-          ...state.selectedZones,
-          {
-            id,
-            city,
-            zone,
-            color,
-            isTarget: false,
-            businessHours: { start: '09:00', end: '17:00', weekdaysOnly: true },
-          },
-        ],
-      }
+      return [
+        ...state.selectedZones,
+        createZoneEntry(zone, city, state.selectedZones.length),
+      ]
     })
   },
   removeZone: (zoneId) => {
-    set((state) => {
+    updateSelectedZones(set, (state) => {
       const remaining = state.selectedZones.filter((z) => z.id !== zoneId)
       const hasTarget = remaining.some((z) => z.isTarget)
 
-      return {
-        selectedZones:
-          hasTarget || remaining.length === 0
-            ? remaining
-            : remaining.map((z, i) => ({ ...z, isTarget: i === 0 })),
-      }
+      return hasTarget || remaining.length === 0
+        ? remaining
+        : remaining.map((z, i) => ({ ...z, isTarget: i === 0 }))
     })
   },
   reorderZones: (activeId, overId) => {
-    set((state) => {
+    updateSelectedZones(set, (state) => {
       const from = state.selectedZones.findIndex((z) => z.id === activeId)
       const to = state.selectedZones.findIndex((z) => z.id === overId)
 
-      return { selectedZones: moveItem(state.selectedZones, from, to) }
+      return moveItem(state.selectedZones, from, to)
     })
   },
   setBusinessHours: (zoneId, start, end) => {
-    set((state) => ({
-      selectedZones: state.selectedZones.map((z) =>
+    updateSelectedZones(set, (state) =>
+      state.selectedZones.map((z) =>
         z.id === zoneId
           ? { ...z, businessHours: { ...z.businessHours, start, end } }
           : z,
       ),
-    }))
+    )
   },
   moveZoneEarlier: (zoneId) => {
-    set((state) => {
+    updateSelectedZones(set, (state) => {
       const currentIndex = state.selectedZones.findIndex(
         (entry) => entry.id === zoneId,
       )
 
-      return {
-        selectedZones: moveItem(
-          state.selectedZones,
-          currentIndex,
-          currentIndex - 1,
-        ),
-      }
+      return moveItem(state.selectedZones, currentIndex, currentIndex - 1)
     })
   },
   moveZoneLater: (zoneId) => {
-    set((state) => {
+    updateSelectedZones(set, (state) => {
       const currentIndex = state.selectedZones.findIndex(
         (entry) => entry.id === zoneId,
       )
 
-      return {
-        selectedZones: moveItem(
-          state.selectedZones,
-          currentIndex,
-          currentIndex + 1,
-        ),
-      }
+      return moveItem(state.selectedZones, currentIndex, currentIndex + 1)
     })
   },
   toggleTarget: (zoneId) => {
-    set((state) => ({
-      selectedZones: state.selectedZones.map((entry) =>
+    updateSelectedZones(set, (state) =>
+      state.selectedZones.map((entry) =>
         entry.id === zoneId ? { ...entry, isTarget: !entry.isTarget } : entry,
       ),
-    }))
+    )
   },
   resetTargets: () => {
-    set((state) => ({
-      selectedZones: state.selectedZones.map((entry, index) => ({
+    updateSelectedZones(set, (state) =>
+      state.selectedZones.map((entry, index) => ({
         ...entry,
         isTarget: index === 0,
       })),
-    }))
+    )
   },
 }))

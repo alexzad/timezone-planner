@@ -4,7 +4,7 @@ Build a greenfield React + TypeScript SPA for comparing multiple IANA time zones
 
 **Current Status**
 
-Iterations 0–8 complete, Iteration 9 cancelled, plus an out-of-iteration expansion of the timezone database. App features:
+Iterations 0–8 and 10 complete, Iteration 9 cancelled, plus an out-of-iteration expansion of the timezone database. App features:
 
 - React + TypeScript SPA with Vite, Zustand state, @dnd-kit drag-and-drop, luxon for timezone math.
 - Seeded with 3 zones (New York, London, Tokyo); searchable ~160-entry city database (new IANA zones + aliases).
@@ -12,15 +12,16 @@ Iterations 0–8 complete, Iteration 9 cancelled, plus an out-of-iteration expan
 - **Overlap calculation**: Computes shared windows across ALL selected zones using DST-safe UTC interval math.
 - **Overlap legend**: Visual indicator and explanatory text when shared overlap windows exist.
 - **Pairwise overlap matrix**: Table below the timeline stack; shows total overlap minutes for every zone pair with intensity-scaled cell backgrounds; horizontally scrollable.
+- **Persistence and share URLs**: Restore scenarios from local storage, hydrate from URL state when present, and copy a shareable URL from the sidebar.
 - Business-hours configuration (start/end times, support for overnight spans) with live timeline updates.
 - Drag-and-drop zone reordering plus keyboard controls (arrow keys).
 - Target zone marking with visual distinction and timeline anchoring.
 - DST-safe timezone conversion utilities with UTC interval calculations.
-- Comprehensive test coverage (58 tests: 35 timezone + 13 store + 10 app).
+- Comprehensive test coverage (61 tests: 35 timezone + 16 store + 10 app).
 - Responsive layout: desktop (2-column sidebar + timeline), mobile (single column, 12-hour timeline).
 - All validation passing: tests, lint, build, format.
 
-Next: Iteration 10 (persistence and shareable URLs).
+Next: Iteration 11 (responsive and accessible interaction pass), focused on keyboard-first interaction and non-color overlap cues.
 
 **Cancelled Work**
 
@@ -36,7 +37,7 @@ Next: Iteration 10 (persistence and shareable URLs).
 6. Phase 6: Analytical outputs. Add computed shared overlap windows across all selected zones, a pairwise overlap summary matrix, and handoff-gap detection for 24x7 planning. Prioritize analysis around marked target zones by highlighting, filtering, and sorting relevant overlaps. This depends on step 5.
 7. Phase 7: Persistence and sharing. Persist the current scenario in local storage and mirror it into shareable URL state with versioning and migration guards. Include load/reset behavior and clearly define conflict precedence if both URL state and local state exist. This depends on steps 2 and 3 and should be finalized after step 5 so URL shape matches the real product state.
 8. Phase 8: Accessibility, responsiveness, and polish. Ensure keyboard support for selection and reordering, accessible timeline semantics, color-independent overlap cues, mobile-friendly layouts, and performance checks with larger timezone sets. This depends on steps 3 through 7.
-9. Phase 9: Verification. Validate DST transitions, non-integer offsets, target-zone filtering, state persistence, URL restoration, overlap correctness, and handoff-gap accuracy with both automated tests and manual scenario checks. This runs throughout, with final pass after step 8.
+9. Phase 9: Verification. Validate DST transitions, non-integer offsets, target-zone filtering, state persistence, URL restoration, and overlap correctness with both automated tests and manual scenario checks. This runs throughout, with final pass after step 8.
 
 **Relevant files**
 

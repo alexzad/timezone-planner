@@ -243,7 +243,7 @@ Status
 
 ## Iteration 10: Persistence and Shareable URLs
 
-- Save selected zones, order, targets, business hours, and view settings to local storage.
+- Save selected zones, order, target flags, and business hours to local storage.
 - Serialize the same state into a shareable URL.
 - Restore app state from URL on load.
 - Define and implement precedence rules when URL state and local state both exist.
@@ -254,6 +254,12 @@ Checkpoint
 - Reloading restores the previous scenario.
 - Opening a shared URL restores the same scenario on a clean load.
 - Persistence tests pass.
+
+Status
+
+- Complete.
+- URL state takes precedence over local storage when both exist.
+- The sidebar includes a copy action for shareable scenario URLs.
 
 ## Iteration 11: Responsive and Accessible Interaction Pass
 

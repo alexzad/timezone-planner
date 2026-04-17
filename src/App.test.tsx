@@ -1,9 +1,14 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import App from './App'
-import { cloneSeededTimeZones, useAppStore } from './state/appStore'
+import {
+  clearPersistedState,
+  cloneSeededTimeZones,
+  useAppStore,
+} from './state/appStore'
 
 describe('App shell', () => {
   beforeEach(() => {
+    clearPersistedState()
     useAppStore.setState({ selectedZones: cloneSeededTimeZones() })
   })
 

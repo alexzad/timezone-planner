@@ -289,6 +289,22 @@
   padding: 10px 14px;
 }
 
+.sidebar-actions {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.sidebar-actions .secondary-button {
+  margin-top: 0;
+}
+
+.share-status {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted-text-color);
+}
+
 .timeline-stack {
   display: grid;
   gap: 14px;

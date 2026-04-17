@@ -289,6 +289,9 @@ function App() {
 
   const [query, setQuery] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>(
+    'idle',
+  )
   const referenceDate = DateTime.now()
 
   const sensors = useSensors(useSensor(PointerSensor))
@@ -298,6 +301,20 @@ function App() {
 
     if (over && active.id !== over.id) {
       reorderZones(String(active.id), String(over.id))
+    }
+  }
+
+  const handleCopyShareUrl = async () => {
+    if (typeof window === 'undefined' || !navigator.clipboard?.writeText) {
+      setShareStatus('error')
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setShareStatus('copied')
+    } catch {
+      setShareStatus('error')
     }
   }
 
@@ -425,13 +442,31 @@ function App() {
             </SortableContext>
           </DndContext>
 
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={resetTargets}
-          >
-            Reset targets
-          </button>
+          <div className="sidebar-actions">
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={resetTargets}
+            >
+              Reset targets
+            </button>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => {
+                void handleCopyShareUrl()
+              }}
+            >
+              Copy share URL
+            </button>
+            {shareStatus !== 'idle' && (
+              <p className="share-status" role="status" aria-live="polite">
+                {shareStatus === 'copied'
+                  ? 'Share URL copied.'
+                  : 'Copy failed.'}
+              </p>
+            )}
+          </div>
         </section>
 
         <section

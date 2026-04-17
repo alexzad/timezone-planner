@@ -1,8 +1,19 @@
 import { act } from '@testing-library/react'
-import { cloneSeededTimeZones, seededTimeZones, useAppStore } from './appStore'
+import {
+  clearPersistedState,
+  cloneSeededTimeZones,
+  readSelectedZonesFromLocalStorage,
+  readSelectedZonesFromUrl,
+  resolveSelectedZonesFromPersistence,
+  seededTimeZones,
+  useAppStore,
+  writeSelectedZonesToLocalStorage,
+  writeSelectedZonesToUrl,
+} from './appStore'
 
 describe('app store', () => {
   beforeEach(() => {
+    clearPersistedState()
     useAppStore.setState({ selectedZones: cloneSeededTimeZones() })
   })
 
@@ -154,5 +165,41 @@ describe('app store', () => {
     expect(london?.businessHours.start).toBe('08:00')
     expect(london?.businessHours.end).toBe('16:00')
     expect(newYork?.businessHours.start).toBe('09:00')
+  })
+
+  it('prefers URL state over local storage when both exist', () => {
+    const localZones = cloneSeededTimeZones().slice(0, 1)
+    const urlZones = cloneSeededTimeZones().slice(1, 3)
+
+    writeSelectedZonesToLocalStorage(localZones)
+    writeSelectedZonesToUrl(urlZones)
+
+    expect(
+      resolveSelectedZonesFromPersistence().map((zone) => zone.city),
+    ).toEqual(['London', 'Tokyo'])
+  })
+
+  it('hydrates from local storage when URL state is absent', () => {
+    const localZones = cloneSeededTimeZones().slice(0, 2)
+
+    writeSelectedZonesToLocalStorage(localZones)
+
+    expect(readSelectedZonesFromUrl()).toBeNull()
+    expect(
+      readSelectedZonesFromLocalStorage()?.map((zone) => zone.city),
+    ).toEqual(['New York', 'London'])
+  })
+
+  it('persists state updates to both local storage and the URL', () => {
+    act(() => {
+      useAppStore.getState().addZone('Europe/Paris', 'Paris')
+    })
+
+    expect(
+      readSelectedZonesFromLocalStorage()?.map((zone) => zone.city),
+    ).toContain('Paris')
+    expect(readSelectedZonesFromUrl()?.map((zone) => zone.city)).toContain(
+      'Paris',
+    )
   })
 })
